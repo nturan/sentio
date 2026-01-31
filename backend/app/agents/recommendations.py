@@ -18,26 +18,29 @@ class GeneratedRecommendation(BaseModel):
     steps: List[str] = Field(description="List of concrete action steps in German")
 
 
-RECOMMENDATION_SYSTEM_PROMPT_BASE = """Du bist ein Experte fuer Change Management. Du erstellst konkrete, umsetzbare Handlungsempfehlungen basierend auf Projektkontext und Stakeholder-Feedback.
+RECOMMENDATION_SYSTEM_PROMPT_BASE = """Rolle: Du bist ein Experte fuer Change Management. Deine Aufgabe ist es, konkrete, umsetzbare Handlungsempfehlungen zu entwickeln, die direkt auf dem spezifischen Projektkontext und dem vorliegenden Stakeholder-Feedback basieren.
 
-Deine Empfehlungen sollten:
-1. Konkret und umsetzbar sein (nicht vage)
-2. Einen klaren Bezug zu den identifizierten Schwachstellen haben
-3. Die betroffenen Stakeholder-Gruppen beruecksichtigen
+Deine Aufgabe: Analysiere das Stakeholder-Feedback und die identifizierten Schwachstellen im Hinblick auf das Projekt. Erstelle daraufhin Empfehlungen, die:
+
+1. Konkret und umsetzbar sind (keine vagen Phrasen)
+2. Einen klaren Bezug zu den identifizierten Problemen haben
+3. Die betroffenen Stakeholder-Gruppen explizit beruecksichtigen
 4. Realistische Schritte zur Umsetzung enthalten
-5. Sowohl kleine Gewohnheiten als auch groessere Initiativen umfassen koennen
+5. Eine Mischung aus Mikro-Gewohnheiten und strategischen Initiativen darstellen
 
-Typen von Empfehlungen:
+Format der Empfehlungen - kategorisiere jede Empfehlung nach folgendem Schema:
+
+Typ:
 - habit: Kleine taegliche/woechentliche Routinen (z.B. "5-Minuten Daily Check-in")
 - communication: Kommunikationsverbesserungen (z.B. "Woechentlicher Newsletter")
 - workshop: Trainings oder Workshop-Sessions (z.B. "Change Agent Training")
 - process: Prozessaenderungen (z.B. "Neuer Feedback-Loop")
 - campaign: Groessere Initiativen (z.B. "Anerkennungsprogramm")
 
-Prioritaeten:
-- high: Dringend, sollte sofort angegangen werden
+Prioritaet:
+- high: Dringend, sofortiger Handlungsbedarf
 - medium: Wichtig, aber nicht zeitkritisch
-- low: Nice-to-have, wenn Ressourcen verfuegbar"""
+- low: Optional, bei verfuegbaren Ressourcen"""
 
 RECOMMENDATION_JSON_FORMAT = """
 Antworte IMMER im JSON-Format mit folgender Struktur:
@@ -136,13 +139,20 @@ Bitte generiere eine ALTERNATIVE Empfehlung, die diesen Einwand beruecksichtigt.
         # Build user message
         user_message = f"""Erstelle eine konkrete Handlungsempfehlung fuer folgendes Change-Projekt:
 
+=== PROJEKTKONTEXT ===
 Projektziel: {project_goal or 'Nicht definiert'}
 {f'Projektbeschreibung: {project_description}' if project_description else ''}
-{stakeholder_context}
-{impulse_context}
+
+=== STAKEHOLDER-GRUPPEN ===
+{stakeholder_context if stakeholder_context else 'Keine Stakeholder-Gruppen definiert.'}
+
+=== STAKEHOLDER-FEEDBACK & SCHWACHSTELLEN ===
+{impulse_context if impulse_context else 'Noch kein Feedback erfasst.'}
 {focus_prompt}
 
+=== AUFGABE ===
 Erstelle EINE gezielte, umsetzbare Empfehlung mit 3-5 konkreten Schritten.
+Die Empfehlung soll direkt auf die identifizierten Schwachstellen eingehen und die betroffenen Stakeholder-Gruppen beruecksichtigen.
 
 Bei der Auswahl der affected_groups: Verwende die tatsaechlichen Gruppen-IDs oder "all" wenn alle betroffen sind."""
 

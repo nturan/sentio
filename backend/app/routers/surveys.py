@@ -31,6 +31,7 @@ class SurveyQuestionModel(BaseModel):
 
 
 class SurveyModel(BaseModel):
+    project_title: Optional[str] = None
     title: str
     description: str
     questions: List[SurveyQuestionModel]
@@ -66,7 +67,7 @@ async def generate_survey(group_id: str):
         cursor.execute(
             """
             SELECT sg.id, sg.project_id, sg.group_type, sg.name, sg.power_level, sg.interest_level,
-                   p.goal as project_goal
+                   p.goal as project_goal, p.name as project_name
             FROM stakeholder_groups sg
             JOIN projects p ON sg.project_id = p.id
             WHERE sg.id = ?
@@ -132,6 +133,7 @@ async def generate_survey(group_id: str):
     try:
         survey = await survey_agent.generate_survey(
             project_goal=group["project_goal"],
+            project_name=group["project_name"],
             group_name=group["name"],
             group_type=group["group_type"],
             mendelow_quadrant=mendelow_quadrant,
@@ -142,6 +144,7 @@ async def generate_survey(group_id: str):
         # Convert to response model
         return GenerateSurveyResponse(
             survey=SurveyModel(
+                project_title=survey.project_title,
                 title=survey.title,
                 description=survey.description,
                 questions=[

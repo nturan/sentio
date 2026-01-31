@@ -27,6 +27,7 @@ export interface SurveyQuestion {
 
 export interface Survey {
     id?: string;
+    project_title?: string;
     title: string;
     description: string;
     questions: SurveyQuestion[];

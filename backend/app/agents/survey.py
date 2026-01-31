@@ -3,8 +3,6 @@ Survey Generator Agent - generates surveys for Mitarbeitende and Multiplikatoren
 """
 
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import json
@@ -20,38 +18,48 @@ class SurveyQuestion(BaseModel):
 
 class Survey(BaseModel):
     """A generated survey."""
+    project_title: Optional[str] = Field(default=None, description="Name of the change project")
     title: str = Field(description="Survey title in German")
     description: str = Field(description="Brief description of the survey purpose in German")
     questions: List[SurveyQuestion] = Field(description="List of survey questions")
     estimated_duration: str = Field(default="~3 Minuten", description="Estimated time to complete")
 
 
-SURVEY_SYSTEM_PROMPT = """Du bist ein Experte fuer Change Management Umfragen. Du erstellst kurze, praegende Puls-Check Umfragen fuer Mitarbeitende und Multiplikatoren.
+SURVEY_SYSTEM_PROMPT = """Rolle: Du bist ein erfahrener Experte fuer Employee Experience und Change Management. Deine Spezialitaet ist es, komplexe psychologische Sicherheits- und Motivationsfaktoren in einfache, nahbare Sprache zu uebersetzen.
 
-Deine Aufgabe:
-1. Erstelle eine kurze Umfrage (3-5 Fragen) basierend auf dem Kontext
-2. Verwende die Bewertungsfaktoren als Inspiration
-3. Fokussiere auf Bereiche, die laut Impulse-Historie Verbesserungspotenzial haben
-4. Formuliere Fragen klar, neutral und auf Deutsch
-5. Mische Skala-Fragen (1-10) mit mindestens einer Freitext-Frage
+Zielgruppe: Mitarbeitende und Multiplikatoren in einem Unternehmen, das sich aktuell im Wandel befindet (z.B. digitale Transformation oder Restrukturierung).
 
-Bewertungsfaktoren zur Orientierung:
+Deine Aufgabe: Erstelle eine praegnante Puls-Check-Umfrage (3-5 Fragen). Du musst die Projektbeschreibung zwingend einbeziehen, damit die Fragen einen direkten Bezug zum Arbeitsalltag der Mitarbeitenden in diesem spezifischen Projekt haben. Die Fragen muessen natuerlich, wertschaetzend und alltagsnah klingen - vermeide starren Corporate-Jargon.
+
+Leitplanken fuer die Formulierungen:
+- Statt "Partizipation" frage: "Hattest du diese Woche das Gefuehl, dass deine Meinung im Rahmen von [Projektname] wirklich zaehlt?"
+- Statt "Psychologische Sicherheit" frage: "Wie leicht fiel es dir zuletzt, Bedenken bezueglich der neuen Prozesse offen anzusprechen?"
+- Statt "Orientierung" frage: "Weisst du aktuell genau, wie dein Beitrag zum Erfolg von [Projektname] aussieht?"
+
+Bewertungsfaktoren als inhaltliche Basis:
 - Orientierung & Sinn: Klarheit der Projektvision und intrinsische Motivation
 - Psychologische Sicherheit: Offene Fehlerkultur und Mut zu abweichenden Meinungen
 - Empowerment: Echte Entscheidungsbefugnisse und Autonomie
 - Partizipation: Aktive Einbindung und Transparenz
 - Wertschaetzung: Empathischer Umgang und Anerkennung
 
-Antwortformat: JSON mit folgender Struktur:
-{{
-    "title": "Umfragetitel",
-    "description": "Kurze Beschreibung",
+Anforderungen:
+- Fokus: Verknuepfe die Fragen direkt mit den Inhalten der Projektbeschreibung
+- Mix: Verwende Skala-Fragen (1-10) und genau eine tiefgruendige Freitext-Frage am Ende
+- Sprache: Deutsch (Du-Form, modern und direkt)"""
+
+SURVEY_JSON_FORMAT = """
+Antwortformat (striktes JSON):
+{
+    "project_title": "Name des Change-Projekts aus der Beschreibung",
+    "title": "Titel der Umfrage",
+    "description": "Ein motivierender Einleitungssatz, der auf das spezifische Projekt Bezug nimmt",
     "questions": [
-        {{"id": "q1", "type": "scale", "question": "Fragetext", "includeJustification": true}},
-        {{"id": "q2", "type": "freetext", "question": "Fragetext"}}
+        {"id": "q1", "type": "scale", "question": "Fragetext", "includeJustification": true},
+        {"id": "q2", "type": "freetext", "question": "Fragetext"}
     ],
     "estimated_duration": "~3 Minuten"
-}}"""
+}"""
 
 
 class SurveyAgent:
@@ -59,11 +67,11 @@ class SurveyAgent:
 
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
-        self.parser = JsonOutputParser(pydantic_object=Survey)
 
     async def generate_survey(
         self,
         project_goal: str,
+        project_name: Optional[str],
         group_name: str,
         group_type: str,
         mendelow_quadrant: str,
@@ -74,7 +82,8 @@ class SurveyAgent:
         Generate a survey based on the stakeholder group context.
 
         Args:
-            project_goal: The project's goal
+            project_goal: The project's goal/description
+            project_name: Name of the project
             group_name: Name of the stakeholder group
             group_type: Type (mitarbeitende, multiplikatoren)
             mendelow_quadrant: Mendelow position (Key Players, Keep Informed, etc.)
@@ -87,7 +96,7 @@ class SurveyAgent:
         # Build context from impulse history
         history_context = ""
         if impulse_history:
-            history_context = "\nLetzte Impulse:\n"
+            history_context = "\n=== BISHERIGES FEEDBACK ===\n"
             for impulse in impulse_history[:5]:
                 history_context += f"- {impulse.get('date', 'Unbekannt')}: Durchschnitt {impulse.get('average_rating', 'N/A')}\n"
                 ratings = impulse.get('ratings', {})
@@ -111,30 +120,42 @@ class SurveyAgent:
                         weak_areas.append(f"{key} (Durchschnitt: {avg:.1f})")
 
                 if weak_areas:
-                    history_context += f"\nSchwachstellen: {', '.join(weak_areas)}\n"
+                    history_context += f"\nIdentifizierte Schwachstellen: {', '.join(weak_areas)}\n"
 
-        # Build prompt
-        user_message = f"""Erstelle eine Puls-Check Umfrage fuer folgende Stakeholder-Gruppe:
+        # Build user message with structured context
+        project_display_name = project_name or "Change-Projekt"
+        user_message = f"""Erstelle eine Puls-Check-Umfrage fuer folgende Situation:
 
-Projektziel: {project_goal or 'Nicht definiert'}
+=== PROJEKTKONTEXT ===
+Projektname: {project_display_name}
+Projektbeschreibung/Ziel: {project_goal or 'Digitale Transformation und Prozessoptimierung'}
 
-Stakeholder-Gruppe:
-- Name: {group_name or group_type}
-- Typ: {group_type}
-- Mendelow-Position: {mendelow_quadrant}
-- Empfohlene Strategie: {mendelow_strategy}
+=== ZIELGRUPPE ===
+Stakeholder-Gruppe: {group_name or group_type}
+Gruppentyp: {group_type}
+Mendelow-Position: {mendelow_quadrant}
+Engagement-Strategie: {mendelow_strategy}
 {history_context}
 
-Erstelle 3-5 gezielte Fragen, die helfen, die aktuelle Stimmung und Beduerfnisse dieser Gruppe zu erfassen. Beruecksichtige besonders die identifizierten Schwachstellen."""
+=== AUFGABE ===
+Erstelle 3-5 gezielte Fragen, die:
+- Einen direkten Bezug zum Projekt "{project_display_name}" haben
+- Die aktuelle Stimmung und Beduerfnisse der Zielgruppe erfassen
+- Besonders auf die identifizierten Schwachstellen eingehen
+- In der Du-Form formuliert sind und nahbar klingen
 
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", SURVEY_SYSTEM_PROMPT),
-            ("human", "{input}")
-        ])
+Wichtig: Ersetze [Projektname] in deinen Fragen durch "{project_display_name}"."""
 
-        chain = prompt | self.llm
+        # Build system message
+        system_message = SURVEY_SYSTEM_PROMPT + SURVEY_JSON_FORMAT
 
-        response = await chain.ainvoke({"input": user_message})
+        # Use direct message list to avoid template escaping issues
+        messages = [
+            ("system", system_message),
+            ("human", user_message)
+        ]
+
+        response = await self.llm.ainvoke(messages)
 
         # Parse the response
         try:
@@ -151,26 +172,28 @@ Erstelle 3-5 gezielte Fragen, die helfen, die aktuelle Stimmung und Beduerfnisse
         except Exception as e:
             # Return a default survey if parsing fails
             print(f"Failed to parse survey response: {e}")
+            print(f"Raw response: {response.content}")
             return Survey(
-                title=f"Puls-Check fuer {group_name or group_type}",
-                description="Kurze Umfrage zur aktuellen Projektsituation",
+                project_title=project_display_name,
+                title=f"Puls-Check: {project_display_name}",
+                description=f"Dein Feedback hilft uns, {project_display_name} noch besser zu gestalten.",
                 questions=[
                     SurveyQuestion(
                         id="q1",
                         type="scale",
-                        question="Wie klar ist Ihnen der Nutzen der aktuellen Veraenderung?",
+                        question=f"Weisst du aktuell genau, wie dein Beitrag zum Erfolg von {project_display_name} aussieht?",
                         includeJustification=True
                     ),
                     SurveyQuestion(
                         id="q2",
                         type="scale",
-                        question="Wie gut fuehlen Sie sich in Entscheidungen eingebunden?",
+                        question="Wie leicht faellt es dir, Bedenken oder Ideen offen anzusprechen?",
                         includeJustification=True
                     ),
                     SurveyQuestion(
                         id="q3",
                         type="freetext",
-                        question="Was wuerden Sie sich fuer die naechsten Wochen wuenschen?"
+                        question="Was wuerdest du dir fuer die naechsten Wochen wuenschen?"
                     )
                 ],
                 estimated_duration="~3 Minuten"
