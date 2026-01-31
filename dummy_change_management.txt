@@ -1,0 +1,19 @@
+# Basics of Change Management
+
+Change management is a systematic approach to dealing with the transition or transformation of an organization's goals, processes, or technologies. The purpose of change management is to implement strategies for effecting change, controlling change, and helping people to adapt to change.
+
+## The ADKAR Model
+The ADKAR model is a goal-oriented change management model that guides individual and organizational change. It was created by Prosci.
+
+The five outcomes an individual needs to achieve for a change to be successful are:
+1.  **Awareness** of the need for change.
+2.  **Desire** to support and participate in the change.
+3.  **Knowledge** of how to change.
+4.  **Ability** to implement required skills and behaviors.
+5.  **Reinforcement** to sustain the change.
+
+## Key Principles
+*   Change happens at the individual level.
+*   Organizational change management is the collective result of individual change.
+*   Communication is key, but it's not enough on its own.
+*   Resistance to change is a natural reaction and should be managed, not ignored.

@@ -1,0 +1,130 @@
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from typing import List, Optional
+from dotenv import load_dotenv
+import os
+import json
+
+from .agents.knowledge import KnowledgeAgent
+from .agents.orchestrator import OrchestratorAgent
+from .agents.chat import ChatAgent
+from .agents.dashboard import DashboardAgent
+from .database import init_database
+from .routers import sessions, projects, documents, workflow, stakeholders, surveys
+
+load_dotenv()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Initialize database
+    init_database()
+    yield
+    # Shutdown: cleanup if needed
+
+
+app = FastAPI(title="Sentio Backend", lifespan=lifespan)
+
+# Configure CORS
+origins = [
+    "http://localhost:5173",  # Vite dev server
+    "http://localhost:4173",  # Vite preview
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize Agents
+knowledge_agent = KnowledgeAgent()
+orchestrator_agent = OrchestratorAgent(knowledge_agent)
+# Chat agent is initialized per request or reused. 
+# Since it holds stateless config, we can reuse, but agent_executor might keep some state if we used memory.
+# Here we are using external history, so it is fine.
+chat_agent = ChatAgent(knowledge_agent)
+dashboard_agent = DashboardAgent()
+
+class ChatRequest(BaseModel):
+    message: str
+    projectId: str
+    history: List[dict]
+
+class OrchestratorRequest(BaseModel):
+    goal: str
+    projectId: str
+
+class RetrieveRequest(BaseModel):
+    query: str
+    projectId: str
+
+class DashboardRequest(BaseModel):
+    text: str
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to Sentio Backend"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+# --- Knowledge Endpoints ---
+
+@app.post("/api/ingest")
+async def ingest_document(
+    file: UploadFile = File(...), 
+    projectId: str = Form(...)
+):
+    metadata = {"projectId": projectId, "source": file.filename}
+    return await knowledge_agent.ingest_document(file, metadata)
+
+@app.post("/api/retrieval")
+async def retrieve_context(request: RetrieveRequest):
+    return await knowledge_agent.retrieve_context(request.query, request.projectId)
+
+# --- Orchestrator Endpoints ---
+
+@app.post("/api/brain")
+async def orchestrate_plan(request: OrchestratorRequest):
+    return await orchestrator_agent.generate_plan(request.goal, request.projectId)
+
+# --- Chat Endpoints ---
+
+@app.post("/api/chat")
+async def chat_endpoint(request: ChatRequest):
+    async def stream_response():
+        # Using a custom generator to format SSE or simple text stream
+        async for chunk in chat_agent.chat(request.message, request.projectId, request.history):
+            # Format as n8n style object if frontend expects that, or simple text
+            # Frontend code in useChat.ts expects lines, JSON parsed.
+            # It expects: { type: 'item', content: '...' }
+            data = json.dumps({"type": "item", "content": chunk})
+            yield f"{data}\n"
+    
+    return StreamingResponse(stream_response(), media_type="text/event-stream")
+
+# --- Dashboard Endpoints ---
+
+@app.post("/api/dashboard")
+async def analyze_dashboard(request: DashboardRequest):
+    # Depending on how the frontend calls this (raw body or JSON)
+    # The new API config sends JSON body: { text: ... } ?
+    # Let's check api.ts or just handle standard JSON.
+    return await dashboard_agent.analyze(request.text)
+
+
+# Register routers
+app.include_router(sessions.router)
+app.include_router(projects.router)
+app.include_router(documents.router)
+app.include_router(workflow.router)
+app.include_router(stakeholders.router)
+app.include_router(surveys.router)

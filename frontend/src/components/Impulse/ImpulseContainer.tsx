@@ -1,0 +1,455 @@
+import { useEffect, useState, Fragment } from 'react';
+import { createPortal } from 'react-dom';
+import { Zap, Plus, RefreshCw, X, ClipboardCheck, FileText } from 'lucide-react';
+import { useStakeholder } from '../../context/StakeholderContext';
+import { ManualAssessmentModal } from './ManualAssessmentModal';
+import { SurveyGeneratorModal } from './SurveyGeneratorModal';
+import type { ImpulseHistory } from '../../types/impulse';
+import type { StakeholderGroup, StakeholderGroupWithAssessments, CreateStakeholderAssessmentRequest } from '../../types/stakeholder';
+import { getImpulseHistory, getStakeholderGroup, batchAddAssessmentsWithDate } from '../../services/api';
+import { GROUP_TYPE_INFO } from '../../types/stakeholder';
+
+interface ImpulseContainerProps {
+    projectId: string;
+}
+
+// Historical assessment entry for the list
+interface HistoricalAssessment {
+    groupId: string;
+    groupName: string;
+    groupType: string;
+    date: string;
+    averageRating: number;
+    source: 'manual' | 'survey';
+}
+
+export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
+    const { groups, isLoading, loadGroups } = useStakeholder();
+    const [impulseHistories, setImpulseHistories] = useState<Record<string, ImpulseHistory>>({});
+    const [selectedGroupForAssessment, setSelectedGroupForAssessment] = useState<StakeholderGroupWithAssessments | null>(null);
+    const [selectedGroupForSurvey, setSelectedGroupForSurvey] = useState<StakeholderGroupWithAssessments | null>(null);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [showGroupSelector, setShowGroupSelector] = useState(false);
+
+    useEffect(() => {
+        loadGroups(projectId);
+    }, [projectId, loadGroups]);
+
+    useEffect(() => {
+        const fetchHistories = async () => {
+            if (groups.length === 0) return;
+            setIsLoadingHistory(true);
+            try {
+                const histories: Record<string, ImpulseHistory> = {};
+                await Promise.all(
+                    groups.map(async (group) => {
+                        try {
+                            const history = await getImpulseHistory(group.id);
+                            histories[group.id] = history;
+                        } catch (err) {
+                            console.error(`Failed to load impulse history for group ${group.id}:`, err);
+                        }
+                    })
+                );
+                setImpulseHistories(histories);
+            } finally {
+                setIsLoadingHistory(false);
+            }
+        };
+        fetchHistories();
+    }, [groups]);
+
+    const handleRefresh = async () => {
+        await loadGroups(projectId);
+    };
+
+    const handleOpenManualAssessment = async (groupId: string) => {
+        try {
+            const groupWithAssessments = await getStakeholderGroup(groupId);
+            setSelectedGroupForAssessment(groupWithAssessments);
+            setShowGroupSelector(false);
+        } catch (err) {
+            console.error('Failed to load group details:', err);
+        }
+    };
+
+    const handleOpenSurveyGenerator = async (groupId: string) => {
+        try {
+            const groupWithAssessments = await getStakeholderGroup(groupId);
+            setSelectedGroupForSurvey(groupWithAssessments);
+            setShowGroupSelector(false);
+        } catch (err) {
+            console.error('Failed to load group details:', err);
+        }
+    };
+
+    const handleSaveAssessments = async (assessments: CreateStakeholderAssessmentRequest[], assessedAt: string) => {
+        if (!selectedGroupForAssessment) return;
+        await batchAddAssessmentsWithDate(selectedGroupForAssessment.id, assessments, assessedAt);
+        // Refresh the history for this group
+        try {
+            const history = await getImpulseHistory(selectedGroupForAssessment.id);
+            setImpulseHistories(prev => ({
+                ...prev,
+                [selectedGroupForAssessment.id]: history
+            }));
+        } catch (err) {
+            console.error('Failed to refresh impulse history:', err);
+        }
+    };
+
+    // Build historical assessments list from all impulse histories
+    const allHistoricalAssessments: HistoricalAssessment[] = [];
+    for (const group of groups) {
+        const history = impulseHistories[group.id];
+        if (history?.impulses) {
+            for (const impulse of history.impulses) {
+                allHistoricalAssessments.push({
+                    groupId: group.id,
+                    groupName: group.name || GROUP_TYPE_INFO[group.group_type]?.name || group.group_type,
+                    groupType: group.group_type,
+                    date: impulse.date,
+                    averageRating: impulse.average_rating,
+                    source: impulse.source
+                });
+            }
+        }
+    }
+    // Sort by date descending
+    allHistoricalAssessments.sort((a, b) => b.date.localeCompare(a.date));
+
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    return (
+        <Fragment>
+            <div className="flex-1 overflow-y-auto p-6">
+                <div className="max-w-4xl mx-auto space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Zap className="text-yellow-500" size={24} />
+                            <h1 className="text-2xl font-bold text-gray-800">Impulse</h1>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleRefresh}
+                                disabled={isLoading || isLoadingHistory}
+                                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <RefreshCw size={16} className={(isLoading || isLoadingHistory) ? 'animate-spin' : ''} />
+                            </button>
+                            <button
+                                onClick={() => setShowGroupSelector(true)}
+                                disabled={groups.length === 0}
+                                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Plus size={16} />
+                                Neuer Impuls
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-gray-600">
+                        Erfassen Sie regelmaessig Impulse zu Ihren Stakeholder-Gruppen, um die Entwicklung im Change-Prozess zu verfolgen.
+                    </p>
+
+                    {/* Loading State */}
+                    {(isLoading && groups.length === 0) ? (
+                        <div className="flex items-center justify-center py-20">
+                            <RefreshCw size={32} className="text-gray-400 animate-spin" />
+                        </div>
+                    ) : groups.length === 0 ? (
+                        <div className="text-center py-20">
+                            <Zap size={48} className="mx-auto text-gray-300 mb-4" />
+                            <h2 className="text-lg font-medium text-gray-700 mb-2">Noch keine Stakeholder-Gruppen</h2>
+                            <p className="text-sm text-gray-500">
+                                Erstellen Sie zuerst Stakeholder-Gruppen im Stakeholder-Tab, um Impulse erfassen zu koennen.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Historical Assessments List */}
+                            <div className="space-y-4">
+                                <h2 className="text-lg font-semibold text-gray-700">Alle Impulse</h2>
+                                {allHistoricalAssessments.length === 0 ? (
+                                    <div className="bg-gray-50 rounded-lg p-6 text-center">
+                                        <p className="text-sm text-gray-500">Noch keine Impulse erfasst</p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                        <table className="w-full">
+                                            <thead className="bg-gray-50 border-b border-gray-200">
+                                                <tr>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Datum</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gruppe</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Typ</th>
+                                                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Durchschnitt</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quelle</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {allHistoricalAssessments.map((assessment, idx) => {
+                                                    const typeInfo = GROUP_TYPE_INFO[assessment.groupType as keyof typeof GROUP_TYPE_INFO];
+                                                    return (
+                                                        <tr key={`${assessment.groupId}-${assessment.date}-${idx}`} className="hover:bg-gray-50">
+                                                            <td className="px-4 py-3 text-sm text-gray-900">
+                                                                {formatDate(assessment.date)}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-sm text-gray-900">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span>{typeInfo?.icon || '👤'}</span>
+                                                                    <span>{assessment.groupName}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-sm text-gray-500">
+                                                                {typeInfo?.name || assessment.groupType}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-sm text-right">
+                                                                <span className={`font-semibold ${
+                                                                    assessment.averageRating >= 7 ? 'text-green-600' :
+                                                                    assessment.averageRating >= 5 ? 'text-yellow-600' :
+                                                                    'text-red-600'
+                                                                }`}>
+                                                                    {assessment.averageRating.toFixed(1)}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-sm">
+                                                                {assessment.source === 'survey' ? (
+                                                                    <span className="inline-flex items-center gap-1 text-purple-600">
+                                                                        <FileText size={14} />
+                                                                        Umfrage
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="inline-flex items-center gap-1 text-blue-600">
+                                                                        <ClipboardCheck size={14} />
+                                                                        Manuell
+                                                                    </span>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            {/* Group Selector Modal - rendered via portal */}
+            {showGroupSelector && createPortal(
+                <GroupSelectorModal
+                    groups={groups}
+                    onSelectManual={handleOpenManualAssessment}
+                    onSelectSurvey={handleOpenSurveyGenerator}
+                    onClose={() => setShowGroupSelector(false)}
+                />,
+                document.body
+            )}
+
+            {/* Manual Assessment Modal */}
+            {selectedGroupForAssessment && (
+                <ManualAssessmentModal
+                    group={selectedGroupForAssessment}
+                    onClose={() => setSelectedGroupForAssessment(null)}
+                    onSave={handleSaveAssessments}
+                />
+            )}
+
+            {/* Survey Generator Modal */}
+            {selectedGroupForSurvey && (
+                <SurveyGeneratorModal
+                    group={selectedGroupForSurvey}
+                    projectId={projectId}
+                    impulseHistory={impulseHistories[selectedGroupForSurvey.id]}
+                    onClose={() => setSelectedGroupForSurvey(null)}
+                />
+            )}
+        </Fragment>
+    );
+}
+
+// Group Selector Modal Component
+interface GroupSelectorModalProps {
+    groups: StakeholderGroup[];
+    onSelectManual: (groupId: string) => void;
+    onSelectSurvey: (groupId: string) => void;
+    onClose: () => void;
+}
+
+function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }: GroupSelectorModalProps) {
+    const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+
+    const selectedGroup = selectedGroupId ? groups.find(g => g.id === selectedGroupId) : null;
+    const canCreateSurvey = selectedGroup?.group_type === 'mitarbeitende' || selectedGroup?.group_type === 'multiplikatoren';
+
+    return (
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '16px',
+                zIndex: 9999,
+            }}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+        >
+            <div
+                style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    width: '100%',
+                    maxWidth: '28rem',
+                    maxHeight: '90vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937' }}>Neuer Impuls</h2>
+                    <button
+                        onClick={onClose}
+                        style={{ padding: '8px', borderRadius: '8px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                    >
+                        <X size={20} color="#6b7280" />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div style={{ padding: '16px 24px', overflowY: 'auto', flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '12px' }}>
+                        Stakeholder-Gruppe waehlen
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {groups.map(group => {
+                            const typeInfo = GROUP_TYPE_INFO[group.group_type];
+                            const isSelected = selectedGroupId === group.id;
+                            return (
+                                <button
+                                    key={group.id}
+                                    onClick={() => setSelectedGroupId(group.id)}
+                                    style={{
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        border: isSelected ? '2px solid #eab308' : '2px solid #e5e7eb',
+                                        backgroundColor: isSelected ? '#fefce8' : 'white',
+                                        textAlign: 'left',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    <span style={{ fontSize: '24px', flexShrink: 0 }}>{typeInfo?.icon || '👤'}</span>
+                                    <div style={{ minWidth: 0 }}>
+                                        <p style={{ fontWeight: 500, color: '#1f2937', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {group.name || typeInfo?.name}
+                                        </p>
+                                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {typeInfo?.subtitle} | {group.mendelow_quadrant}
+                                        </p>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Action Selection (when group is selected) */}
+                    {selectedGroup && (
+                        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
+                            <p style={{ fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '12px' }}>Aktion waehlen:</p>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                    onClick={() => onSelectManual(selectedGroup.id)}
+                                    style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        padding: '12px 16px',
+                                        backgroundColor: '#2563eb',
+                                        color: 'white',
+                                        borderRadius: '8px',
+                                        border: 'none',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    <ClipboardCheck size={18} />
+                                    Manuelle Bewertung
+                                </button>
+                                {canCreateSurvey && (
+                                    <button
+                                        onClick={() => onSelectSurvey(selectedGroup.id)}
+                                        style={{
+                                            flex: 1,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '8px',
+                                            padding: '12px 16px',
+                                            backgroundColor: '#9333ea',
+                                            color: 'white',
+                                            borderRadius: '8px',
+                                            border: 'none',
+                                            fontSize: '14px',
+                                            fontWeight: 500,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <FileText size={18} />
+                                        Umfrage erstellen
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div style={{ padding: '16px 24px', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            padding: '8px 16px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            color: '#374151',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Abbrechen
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
