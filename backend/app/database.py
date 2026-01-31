@@ -192,6 +192,29 @@ def init_database():
             )
         """)
 
+        # Create recommendations table - AI-generated action recommendations
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS recommendations (
+                id TEXT PRIMARY KEY,
+                project_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT,
+                recommendation_type TEXT NOT NULL CHECK(recommendation_type IN ('habit', 'communication', 'workshop', 'process', 'campaign')),
+                priority TEXT NOT NULL DEFAULT 'medium' CHECK(priority IN ('high', 'medium', 'low')),
+                status TEXT NOT NULL DEFAULT 'pending_approval' CHECK(status IN ('pending_approval', 'approved', 'rejected', 'started', 'completed')),
+                affected_groups TEXT,
+                steps TEXT,
+                rejection_reason TEXT,
+                parent_id TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                approved_at TIMESTAMP,
+                started_at TIMESTAMP,
+                completed_at TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES recommendations(id) ON DELETE SET NULL
+            )
+        """)
+
         # Create indexes for better query performance
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_sessions_project_id
@@ -244,6 +267,14 @@ def init_database():
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_surveys_stakeholder_group_id
             ON surveys(stakeholder_group_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_recommendations_project_id
+            ON recommendations(project_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_recommendations_status
+            ON recommendations(status)
         """)
 
         conn.commit()

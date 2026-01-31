@@ -4,6 +4,7 @@ import { TabNavigation } from './components/Layout/TabNavigation';
 import { ChatContainer } from './components/Chat/ChatContainer';
 import { DashboardContainer } from './components/Dashboard/DashboardContainer';
 import { ImpulseContainer } from './components/Impulse/ImpulseContainer';
+import { RecommendationsContainer } from './components/Recommendations/RecommendationsContainer';
 import { StakeholderContainer } from './components/Stakeholder/StakeholderContainer';
 import { SettingsContainer } from './components/Settings/SettingsContainer';
 import { useProjects } from './context/ProjectContext';
@@ -67,6 +68,13 @@ function AppContent() {
 
             <div className={activeTab === 'impulse' ? 'flex flex-col flex-1 overflow-hidden' : 'hidden'}>
               <ImpulseContainer projectId={selectedProject.id} />
+            </div>
+
+            <div className={activeTab === 'recommendations' ? 'flex flex-col flex-1 overflow-hidden' : 'hidden'}>
+              <RecommendationsContainer
+                projectId={selectedProject.id}
+                onNavigateToImpulse={() => setActiveTab('impulse')}
+              />
             </div>
 
             <div className={activeTab === 'stakeholder' ? 'flex flex-col flex-1 overflow-hidden' : 'hidden'}>

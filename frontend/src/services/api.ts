@@ -463,3 +463,88 @@ export async function saveSurvey(groupId: string, survey: Survey): Promise<SaveS
     }
     return response.json();
 }
+
+// --- Recommendations API functions ---
+
+import type {
+    Recommendation,
+    CreateRecommendationRequest,
+    UpdateRecommendationRequest,
+    GenerateRecommendationResponse
+} from '../types/recommendation';
+
+export async function listRecommendations(projectId: string, status?: string): Promise<Recommendation[]> {
+    const url = status
+        ? `/api/projects/${projectId}/recommendations?status=${status}`
+        : `/api/projects/${projectId}/recommendations`;
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to list recommendations: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function getRecommendation(recId: string): Promise<Recommendation> {
+    const response = await fetch(`/api/recommendations/${recId}`);
+    if (!response.ok) {
+        throw new Error(`Failed to get recommendation: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function createRecommendation(projectId: string, data: CreateRecommendationRequest): Promise<Recommendation> {
+    const response = await fetch(`/api/projects/${projectId}/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to create recommendation: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function updateRecommendation(recId: string, data: UpdateRecommendationRequest): Promise<Recommendation> {
+    const response = await fetch(`/api/recommendations/${recId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to update recommendation: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function deleteRecommendation(recId: string): Promise<void> {
+    const response = await fetch(`/api/recommendations/${recId}`, {
+        method: 'DELETE'
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to delete recommendation: ${response.statusText}`);
+    }
+}
+
+export async function generateRecommendation(projectId: string, focus?: string): Promise<GenerateRecommendationResponse> {
+    const response = await fetch(`/api/projects/${projectId}/recommendations/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ focus })
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to generate recommendation: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function regenerateRecommendation(recId: string, additionalContext?: string): Promise<GenerateRecommendationResponse> {
+    const response = await fetch(`/api/recommendations/${recId}/regenerate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ additional_context: additionalContext })
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to regenerate recommendation: ${response.statusText}`);
+    }
+    return response.json();
+}

@@ -13,7 +13,7 @@ from .agents.orchestrator import OrchestratorAgent
 from .agents.chat import ChatAgent
 from .agents.dashboard import DashboardAgent
 from .database import init_database
-from .routers import sessions, projects, documents, workflow, stakeholders, surveys
+from .routers import sessions, projects, documents, workflow, stakeholders, surveys, recommendations
 
 load_dotenv()
 
@@ -128,3 +128,4 @@ app.include_router(documents.router)
 app.include_router(workflow.router)
 app.include_router(stakeholders.router)
 app.include_router(surveys.router)
+app.include_router(recommendations.router)
