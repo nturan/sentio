@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Loader2, Plus, Trash2 } from 'lucide-react';
 import type { GeneratedRecommendation, RecommendationType, RecommendationPriority, CreateRecommendationRequest } from '../../types/recommendation';
@@ -6,6 +6,9 @@ import { RECOMMENDATION_TYPE_INFO, PRIORITY_INFO } from '../../types/recommendat
 import type { StakeholderGroup } from '../../types/stakeholder';
 import { GROUP_TYPE_INFO } from '../../types/stakeholder';
 import { generateRecommendation, regenerateRecommendation, createRecommendation } from '../../services/api';
+import { useGeneratorChat } from '../../hooks/useGeneratorChat';
+import { GeneratorChatPanel } from '../GeneratorChat';
+import type { RecommendationCanvasData } from '../../types/generatorChat';
 
 interface GeneratorModalProps {
     projectId: string;
@@ -40,6 +43,36 @@ export function GeneratorModal({
     const [editedPriority, setEditedPriority] = useState<RecommendationPriority>('medium');
     const [editedAffectedGroups, setEditedAffectedGroups] = useState<string[]>([]);
     const [editedSteps, setEditedSteps] = useState<string[]>([]);
+
+    // Canvas data for chat - memoized to prevent unnecessary re-renders
+    const canvasData = useMemo<RecommendationCanvasData>(() => ({
+        title: editedTitle,
+        description: editedDescription,
+        recommendation_type: editedType,
+        priority: editedPriority,
+        affected_groups: editedAffectedGroups,
+        steps: editedSteps
+    }), [editedTitle, editedDescription, editedType, editedPriority, editedAffectedGroups, editedSteps]);
+
+    // Handle canvas updates from chat
+    const handleCanvasUpdate = useCallback((updates: Partial<RecommendationCanvasData>) => {
+        if (updates.title !== undefined) setEditedTitle(updates.title);
+        if (updates.description !== undefined) setEditedDescription(updates.description);
+        if (updates.recommendation_type !== undefined) setEditedType(updates.recommendation_type as RecommendationType);
+        if (updates.priority !== undefined) setEditedPriority(updates.priority as RecommendationPriority);
+        if (updates.affected_groups !== undefined) setEditedAffectedGroups(updates.affected_groups);
+        if (updates.steps !== undefined) setEditedSteps(updates.steps);
+    }, []);
+
+    // Generator chat hook
+    const { messages, sendMessage, isTyping } = useGeneratorChat<RecommendationCanvasData>(
+        canvasData,
+        {
+            projectId,
+            generatorType: 'recommendation',
+            onCanvasUpdate: handleCanvasUpdate
+        }
+    );
 
     // Update edited fields when generated recommendation changes
     useEffect(() => {
@@ -133,6 +166,9 @@ export function GeneratorModal({
         setEditedSteps(newSteps);
     };
 
+    // Determine if chat panel should be shown (after generation)
+    const showChat = generated !== null;
+
     const modalContent = (
         <div
             style={{
@@ -149,7 +185,7 @@ export function GeneratorModal({
                 zIndex: 9999,
             }}
             onClick={(e) => {
-                if (e.target === e.currentTarget && !isGenerating && !isSaving) onClose();
+                if (e.target === e.currentTarget && !isGenerating && !isSaving && !isTyping) onClose();
             }}
         >
             <div
@@ -158,234 +194,269 @@ export function GeneratorModal({
                     borderRadius: '12px',
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                     width: '100%',
-                    maxWidth: '48rem',
+                    maxWidth: showChat ? '80rem' : '48rem',
                     maxHeight: '90vh',
                     display: 'flex',
                     flexDirection: 'column',
+                    transition: 'max-width 0.3s ease-in-out',
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                <div style={{ flexShrink: 0 }} className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-800">
                         {rejectedRecommendationId ? 'Alternative Empfehlung generieren' : 'Neue Handlungsempfehlung generieren'}
                     </h2>
                     <button
                         onClick={onClose}
-                        disabled={isGenerating || isSaving}
+                        disabled={isGenerating || isSaving || isTyping}
                         className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
                     >
                         <X size={20} className="text-gray-500" />
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                    {/* Context Display */}
-                    <div className="bg-gray-50 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-gray-700 mb-2">Kontext fuer KI:</h3>
-                        <div className="text-sm text-gray-600 space-y-1">
-                            <p><span className="font-medium">Projektziel:</span> {projectGoal || 'Nicht definiert'}</p>
-                            {stakeholderGroups.length > 0 && (
-                                <p><span className="font-medium">Stakeholder-Gruppen:</span> {stakeholderGroups.map(g => g.name || GROUP_TYPE_INFO[g.group_type]?.name).join(', ')}</p>
-                            )}
-                            {rejectionReason && (
-                                <p className="text-red-600"><span className="font-medium">Ablehnungsgrund:</span> {rejectionReason}</p>
-                            )}
+                {/* Main Content - Split Layout when chat is visible */}
+                <div style={{ flex: '1 1 0%', minHeight: 0, display: 'flex', flexDirection: showChat ? 'row' : 'column', overflow: 'hidden' }}>
+                    {/* Canvas Panel (Left side when chat visible) */}
+                    <div style={{
+                        flex: showChat ? '0 0 60%' : '1 1 auto',
+                        minHeight: 0,
+                        overflowY: 'auto',
+                        padding: '24px'
+                    }} className="space-y-6">
+                        {/* Context Display */}
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <h3 className="text-sm font-medium text-gray-700 mb-2">Kontext fuer KI:</h3>
+                            <div className="text-sm text-gray-600 space-y-1">
+                                <p><span className="font-medium">Projektziel:</span> {projectGoal || 'Nicht definiert'}</p>
+                                {stakeholderGroups.length > 0 && (
+                                    <p><span className="font-medium">Stakeholder-Gruppen:</span> {stakeholderGroups.map(g => g.name || GROUP_TYPE_INFO[g.group_type]?.name).join(', ')}</p>
+                                )}
+                                {rejectionReason && (
+                                    <p className="text-red-600"><span className="font-medium">Ablehnungsgrund:</span> {rejectionReason}</p>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Focus Input */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Fokus (optional)
-                        </label>
-                        <input
-                            type="text"
-                            value={focus}
-                            onChange={(e) => setFocus(e.target.value)}
-                            placeholder="z.B. 'Kommunikation verbessern' oder leer lassen"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            disabled={isGenerating || isSaving}
-                        />
-                    </div>
-
-                    {/* Generate Button */}
-                    {!generated && (
-                        <button
-                            onClick={handleGenerate}
-                            disabled={isGenerating}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-                        >
-                            {isGenerating ? (
-                                <>
-                                    <Loader2 size={18} className="animate-spin" />
-                                    Generiere Empfehlung...
-                                </>
-                            ) : (
-                                'Empfehlung generieren'
-                            )}
-                        </button>
-                    )}
-
-                    {/* Error Display */}
-                    {error && (
-                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                            {error}
+                        {/* Focus Input */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Fokus (optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={focus}
+                                onChange={(e) => setFocus(e.target.value)}
+                                placeholder="z.B. 'Kommunikation verbessern' oder leer lassen"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                disabled={isGenerating || isSaving}
+                            />
                         </div>
-                    )}
 
-                    {/* Generated Recommendation (Editable) */}
-                    {generated && (
-                        <div className="space-y-4 border-t border-gray-200 pt-6">
-                            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                Generierte Empfehlung (editierbar):
-                            </h3>
-
-                            {/* Title */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Titel:</label>
-                                <input
-                                    type="text"
-                                    value={editedTitle}
-                                    onChange={(e) => setEditedTitle(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    disabled={isSaving}
-                                />
-                            </div>
-
-                            {/* Description */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Beschreibung:</label>
-                                <textarea
-                                    value={editedDescription}
-                                    onChange={(e) => setEditedDescription(e.target.value)}
-                                    rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                                    disabled={isSaving}
-                                />
-                            </div>
-
-                            {/* Type & Priority */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Typ:</label>
-                                    <select
-                                        value={editedType}
-                                        onChange={(e) => setEditedType(e.target.value as RecommendationType)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        disabled={isSaving}
-                                    >
-                                        {Object.entries(RECOMMENDATION_TYPE_INFO).map(([key, info]) => (
-                                            <option key={key} value={key}>
-                                                {info.icon} {info.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Prioritaet:</label>
-                                    <select
-                                        value={editedPriority}
-                                        onChange={(e) => setEditedPriority(e.target.value as RecommendationPriority)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        disabled={isSaving}
-                                    >
-                                        {Object.entries(PRIORITY_INFO).map(([key, info]) => (
-                                            <option key={key} value={key}>{info.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Affected Groups */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Betroffene Gruppen:</label>
-                                <div className="flex flex-wrap gap-2">
-                                    <label className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded cursor-pointer hover:bg-gray-200">
-                                        <input
-                                            type="checkbox"
-                                            checked={editedAffectedGroups.includes('all')}
-                                            onChange={handleToggleAll}
-                                            disabled={isSaving}
-                                        />
-                                        <span className="text-sm">Alle</span>
-                                    </label>
-                                    {stakeholderGroups.map(group => (
-                                        <label
-                                            key={group.id}
-                                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={editedAffectedGroups.includes(group.id) || editedAffectedGroups.includes('all')}
-                                                onChange={() => handleToggleGroup(group.id)}
-                                                disabled={isSaving || editedAffectedGroups.includes('all')}
-                                            />
-                                            <span className="text-sm">
-                                                {GROUP_TYPE_INFO[group.group_type]?.icon} {group.name || GROUP_TYPE_INFO[group.group_type]?.name}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Steps */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Konkrete Schritte:</label>
-                                <div className="space-y-2">
-                                    {editedSteps.map((step, index) => (
-                                        <div key={index} className="flex items-center gap-2">
-                                            <span className="text-sm text-gray-500 w-6">{index + 1}.</span>
-                                            <input
-                                                type="text"
-                                                value={step}
-                                                onChange={(e) => handleUpdateStep(index, e.target.value)}
-                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                placeholder="Schritt beschreiben..."
-                                                disabled={isSaving}
-                                            />
-                                            <button
-                                                onClick={() => handleRemoveStep(index)}
-                                                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                                disabled={isSaving}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <button
-                                        onClick={handleAddStep}
-                                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                                        disabled={isSaving}
-                                    >
-                                        <Plus size={14} />
-                                        Schritt hinzufuegen
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Regenerate Button */}
+                        {/* Generate Button */}
+                        {!generated && (
                             <button
                                 onClick={handleGenerate}
                                 disabled={isGenerating}
-                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
                             >
                                 {isGenerating ? (
-                                    <Loader2 size={14} className="animate-spin" />
+                                    <>
+                                        <Loader2 size={18} className="animate-spin" />
+                                        Generiere Empfehlung...
+                                    </>
                                 ) : (
-                                    <span>Neu generieren</span>
+                                    'Empfehlung generieren'
                                 )}
                             </button>
+                        )}
+
+                        {/* Error Display */}
+                        {error && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                                {error}
+                            </div>
+                        )}
+
+                        {/* Generated Recommendation (Editable) */}
+                        {generated && (
+                            <div className="space-y-4 border-t border-gray-200 pt-6">
+                                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    Generierte Empfehlung (editierbar):
+                                </h3>
+
+                                {/* Title */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Titel:</label>
+                                    <input
+                                        type="text"
+                                        value={editedTitle}
+                                        onChange={(e) => setEditedTitle(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        disabled={isSaving}
+                                    />
+                                </div>
+
+                                {/* Description */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Beschreibung:</label>
+                                    <textarea
+                                        value={editedDescription}
+                                        onChange={(e) => setEditedDescription(e.target.value)}
+                                        rows={3}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                        disabled={isSaving}
+                                    />
+                                </div>
+
+                                {/* Type & Priority */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Typ:</label>
+                                        <select
+                                            value={editedType}
+                                            onChange={(e) => setEditedType(e.target.value as RecommendationType)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            disabled={isSaving}
+                                        >
+                                            {Object.entries(RECOMMENDATION_TYPE_INFO).map(([key, info]) => (
+                                                <option key={key} value={key}>
+                                                    {info.icon} {info.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Prioritaet:</label>
+                                        <select
+                                            value={editedPriority}
+                                            onChange={(e) => setEditedPriority(e.target.value as RecommendationPriority)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            disabled={isSaving}
+                                        >
+                                            {Object.entries(PRIORITY_INFO).map(([key, info]) => (
+                                                <option key={key} value={key}>{info.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Affected Groups */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Betroffene Gruppen:</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        <label className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded cursor-pointer hover:bg-gray-200">
+                                            <input
+                                                type="checkbox"
+                                                checked={editedAffectedGroups.includes('all')}
+                                                onChange={handleToggleAll}
+                                                disabled={isSaving}
+                                            />
+                                            <span className="text-sm">Alle</span>
+                                        </label>
+                                        {stakeholderGroups.map(group => (
+                                            <label
+                                                key={group.id}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editedAffectedGroups.includes(group.id) || editedAffectedGroups.includes('all')}
+                                                    onChange={() => handleToggleGroup(group.id)}
+                                                    disabled={isSaving || editedAffectedGroups.includes('all')}
+                                                />
+                                                <span className="text-sm">
+                                                    {GROUP_TYPE_INFO[group.group_type]?.icon} {group.name || GROUP_TYPE_INFO[group.group_type]?.name}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Steps */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Konkrete Schritte:</label>
+                                    <div className="space-y-2">
+                                        {editedSteps.map((step, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <span className="text-sm text-gray-500 w-6">{index + 1}.</span>
+                                                <input
+                                                    type="text"
+                                                    value={step}
+                                                    onChange={(e) => handleUpdateStep(index, e.target.value)}
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Schritt beschreiben..."
+                                                    disabled={isSaving}
+                                                />
+                                                <button
+                                                    onClick={() => handleRemoveStep(index)}
+                                                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                                    disabled={isSaving}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            onClick={handleAddStep}
+                                            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                                            disabled={isSaving}
+                                        >
+                                            <Plus size={14} />
+                                            Schritt hinzufuegen
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Regenerate Button */}
+                                <button
+                                    onClick={handleGenerate}
+                                    disabled={isGenerating}
+                                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
+                                >
+                                    {isGenerating ? (
+                                        <Loader2 size={14} className="animate-spin" />
+                                    ) : (
+                                        <span>Neu generieren</span>
+                                    )}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Chat Panel (Right side - only shown after generation) */}
+                    {showChat && (
+                        <div style={{
+                            flex: '0 0 40%',
+                            minHeight: 0,
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: 'flex',
+                                flexDirection: 'column'
+                            }}>
+                                <GeneratorChatPanel
+                                    messages={messages}
+                                    onSendMessage={sendMessage}
+                                    isTyping={isTyping}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3 flex-shrink-0">
+                <div style={{ flexShrink: 0 }} className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
                     <button
                         onClick={onClose}
-                        disabled={isGenerating || isSaving}
+                        disabled={isGenerating || isSaving || isTyping}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
                     >
                         Abbrechen
@@ -393,7 +464,7 @@ export function GeneratorModal({
                     {generated && (
                         <button
                             onClick={handleSave}
-                            disabled={isSaving || !editedTitle.trim()}
+                            disabled={isSaving || !editedTitle.trim() || isTyping}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
                         >
                             {isSaving ? (

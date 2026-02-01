@@ -12,6 +12,7 @@ from .agents.knowledge import KnowledgeAgent
 from .agents.orchestrator import OrchestratorAgent
 from .agents.chat import ChatAgent
 from .agents.dashboard import DashboardAgent
+from .agents.generator_chat import GeneratorChatAgent
 from .agents.mcp_client import MCPClientManager
 from .database import init_database
 from .routers import sessions, projects, documents, workflow, stakeholders, surveys, recommendations, seed, insights
@@ -62,10 +63,11 @@ app.add_middleware(
 # Initialize Agents
 knowledge_agent = KnowledgeAgent()
 orchestrator_agent = OrchestratorAgent(knowledge_agent)
-# Chat agent is initialized per request or reused. 
+# Chat agent is initialized per request or reused.
 # Since it holds stateless config, we can reuse, but agent_executor might keep some state if we used memory.
 # Here we are using external history, so it is fine.
 chat_agent = ChatAgent(knowledge_agent)
+generator_chat_agent = GeneratorChatAgent(knowledge_agent)
 dashboard_agent = DashboardAgent()
 
 class ChatRequest(BaseModel):
@@ -83,6 +85,13 @@ class RetrieveRequest(BaseModel):
 
 class DashboardRequest(BaseModel):
     text: str
+
+class GeneratorChatRequest(BaseModel):
+    message: str
+    projectId: str
+    generatorType: str  # 'recommendation', 'insight', 'survey'
+    canvasData: dict
+    history: List[dict]
 
 @app.get("/")
 def read_root():
@@ -124,7 +133,27 @@ async def chat_endpoint(request: ChatRequest):
             # It expects: { type: 'item', content: '...' }
             data = json.dumps({"type": "item", "content": chunk})
             yield f"{data}\n"
-    
+
+    return StreamingResponse(stream_response(), media_type="text/event-stream")
+
+@app.post("/api/generator-chat")
+async def generator_chat_endpoint(request: GeneratorChatRequest):
+    """
+    Interactive chat endpoint for generator modals.
+    Allows users to ask questions about project context and request canvas modifications.
+    """
+    async def stream_response():
+        async for chunk in generator_chat_agent.chat(
+            message=request.message,
+            project_id=request.projectId,
+            generator_type=request.generatorType,
+            canvas_data=request.canvasData,
+            history=request.history
+        ):
+            # Same format as regular chat for frontend compatibility
+            data = json.dumps({"type": "item", "content": chunk})
+            yield f"{data}\n"
+
     return StreamingResponse(stream_response(), media_type="text/event-stream")
 
 # --- Dashboard Endpoints ---
