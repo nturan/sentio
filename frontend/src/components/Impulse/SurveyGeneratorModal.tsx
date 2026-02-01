@@ -7,6 +7,7 @@ import { generateSurvey, saveSurvey } from '../../services/api';
 import { useGeneratorChat } from '../../hooks/useGeneratorChat';
 import { GeneratorChatPanel } from '../GeneratorChat';
 import type { SurveyCanvasData } from '../../types/generatorChat';
+import { useRefresh } from '../../context/RefreshContext';
 
 interface SurveyGeneratorModalProps {
     group: StakeholderGroupWithAssessments;
@@ -16,6 +17,7 @@ interface SurveyGeneratorModalProps {
 }
 
 export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose }: SurveyGeneratorModalProps) {
+    const { triggerRefresh } = useRefresh();
     const [isGenerating, setIsGenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [survey, setSurvey] = useState<Survey | null>(null);
@@ -105,6 +107,8 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
         try {
             const response = await saveSurvey(group.id, survey);
             setSavedPath(response.file_path);
+            // Trigger refresh for impulses (survey data)
+            triggerRefresh('impulses');
         } catch (err) {
             console.error('Failed to save survey:', err);
             alert('Fehler beim Speichern der Umfrage.');

@@ -2,6 +2,7 @@ import { useEffect, useState, Fragment } from 'react';
 import { createPortal } from 'react-dom';
 import { Zap, Plus, RefreshCw, X, ClipboardCheck, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useStakeholder } from '../../context/StakeholderContext';
+import { useRefresh, useRefreshSignal } from '../../context/RefreshContext';
 import { ManualAssessmentModal } from './ManualAssessmentModal';
 import { SurveyGeneratorModal } from './SurveyGeneratorModal';
 import type { ImpulseHistory } from '../../types/impulse';
@@ -40,6 +41,8 @@ interface HistoricalAssessment {
 
 export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
     const { groups, isLoading, loadGroups } = useStakeholder();
+    const { triggerRefresh } = useRefresh();
+    const impulsesRefreshSignal = useRefreshSignal('impulses');
     const [impulseHistories, setImpulseHistories] = useState<Record<string, ImpulseHistory>>({});
     const [selectedGroupForAssessment, setSelectedGroupForAssessment] = useState<StakeholderGroupWithAssessments | null>(null);
     const [selectedGroupForSurvey, setSelectedGroupForSurvey] = useState<StakeholderGroupWithAssessments | null>(null);
@@ -49,7 +52,7 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
 
     useEffect(() => {
         loadGroups(projectId);
-    }, [projectId, loadGroups]);
+    }, [projectId, loadGroups, impulsesRefreshSignal]);
 
     useEffect(() => {
         const fetchHistories = async () => {
@@ -73,7 +76,7 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
             }
         };
         fetchHistories();
-    }, [groups]);
+    }, [groups, impulsesRefreshSignal]);
 
     const handleRefresh = async () => {
         await loadGroups(projectId);
@@ -109,6 +112,8 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                 ...prev,
                 [selectedGroupForAssessment.id]: history
             }));
+            // Trigger refresh for dashboard and other components
+            triggerRefresh('impulses');
         } catch (err) {
             console.error('Failed to refresh impulse history:', err);
         }

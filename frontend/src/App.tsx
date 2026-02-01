@@ -9,6 +9,7 @@ import { StakeholderContainer } from './components/Stakeholder/StakeholderContai
 import { SettingsContainer } from './components/Settings/SettingsContainer';
 import { useProjects } from './context/ProjectContext';
 import { StakeholderProvider } from './context/StakeholderContext';
+import { RefreshProvider } from './context/RefreshContext';
 
 // Error Boundary to catch rendering errors
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -98,11 +99,13 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <StakeholderProvider>
-        <AppLayout>
-          <AppContent />
-        </AppLayout>
-      </StakeholderProvider>
+      <RefreshProvider>
+        <StakeholderProvider>
+          <AppLayout>
+            <AppContent />
+          </AppLayout>
+        </StakeholderProvider>
+      </RefreshProvider>
     </ErrorBoundary>
   );
 }

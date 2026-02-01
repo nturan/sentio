@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Save, Upload, FileText, Trash2, Loader2, CheckCircle, Settings, AlertCircle } from 'lucide-react';
 import { useProjects } from '../../context/ProjectContext';
+import { useRefresh, useRefreshSignal } from '../../context/RefreshContext';
 import { listDocuments, uploadDocument, deleteDocument, type DocumentData } from '../../services/api';
 
 interface UploadedFile {
@@ -35,6 +36,8 @@ function formatDate(dateString: string): string {
 
 export function SettingsContainer({ projectId }: SettingsContainerProps) {
     const { selectedProject, refreshProjects } = useProjects();
+    const { triggerRefresh } = useRefresh();
+    const documentsRefreshSignal = useRefreshSignal('documents');
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
         name: selectedProject?.name || '',
@@ -65,12 +68,12 @@ export function SettingsContainer({ projectId }: SettingsContainerProps) {
         }
     }, [selectedProject]);
 
-    // Load documents when project changes
+    // Load documents when project changes or refresh signal triggered
     useEffect(() => {
         if (selectedProject) {
             loadDocuments();
         }
-    }, [selectedProject?.id]);
+    }, [selectedProject?.id, documentsRefreshSignal]);
 
     const loadDocuments = async () => {
         if (!selectedProject) return;
@@ -172,6 +175,9 @@ export function SettingsContainer({ projectId }: SettingsContainerProps) {
 
         // Refresh document list
         await loadDocuments();
+
+        // Trigger refresh for other components that might use documents
+        triggerRefresh('documents');
 
         // Clear successful uploads
         setFiles(prev => prev.filter(f => f.status !== 'success'));

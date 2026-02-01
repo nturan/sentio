@@ -13,6 +13,7 @@ import {
 import { IndicatorCard } from './IndicatorCard';
 import { InsightsSection } from './InsightsSection';
 import { getDashboardData, type DashboardData, type DashboardIndicatorScore } from '../../services/api';
+import { useRefreshSignal } from '../../context/RefreshContext';
 
 interface DashboardContainerProps {
     projectId: string;
@@ -31,6 +32,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const dashboardRefreshSignal = useRefreshSignal('dashboard');
 
     const loadData = async () => {
         setIsLoading(true);
@@ -48,7 +50,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
 
     useEffect(() => {
         loadData();
-    }, [projectId]);
+    }, [projectId, dashboardRefreshSignal]);
 
     const hasAnyData = dashboardData?.indicators.some(i => i.rating_count > 0) ?? false;
 

@@ -17,6 +17,7 @@ import {
 } from '../../services/api';
 import type { Insight, InsightType, InsightPriority } from '../../types/insight';
 import { INSIGHT_TYPE_INFO, INSIGHT_PRIORITY_INFO, TRIGGER_TYPE_INFO } from '../../types/insight';
+import { useRefresh, useRefreshSignal } from '../../context/RefreshContext';
 
 interface InsightsSectionProps {
     projectId: string;
@@ -163,6 +164,8 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);
+    const { triggerRefresh } = useRefresh();
+    const insightsRefreshSignal = useRefreshSignal('insights');
 
     const loadInsights = async () => {
         try {
@@ -179,7 +182,7 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
 
     useEffect(() => {
         loadInsights();
-    }, [projectId]);
+    }, [projectId, insightsRefreshSignal]);
 
     const handleGenerate = async () => {
         setIsGenerating(true);
@@ -204,6 +207,7 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
             };
             setInsights([newInsight, ...insights]);
             setExpandedId(newInsight.id); // Auto-expand new insight
+            triggerRefresh('insights'); // Notify other components
         } catch (err) {
             console.error('Failed to generate insight:', err);
             setError('Insight konnte nicht generiert werden');

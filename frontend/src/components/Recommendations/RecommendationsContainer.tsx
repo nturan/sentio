@@ -1,7 +1,8 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState, Fragment, useCallback } from 'react';
 import { Lightbulb, Plus, RefreshCw, Filter } from 'lucide-react';
 import { useStakeholder } from '../../context/StakeholderContext';
 import { useProjects } from '../../context/ProjectContext';
+import { useRefresh, useRefreshSignal } from '../../context/RefreshContext';
 import { RecommendationCard } from './RecommendationCard';
 import { GeneratorModal } from './GeneratorModal';
 import { RejectModal } from './RejectModal';
@@ -20,6 +21,8 @@ type FilterStatus = 'all' | RecommendationStatus;
 export function RecommendationsContainer({ projectId, onNavigateToImpulse }: RecommendationsContainerProps) {
     const { groups, loadGroups } = useStakeholder();
     const { selectedProject } = useProjects();
+    const { triggerRefresh } = useRefresh();
+    const recommendationsRefreshSignal = useRefreshSignal('recommendations');
     const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -31,12 +34,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
     const [editingRecommendation, setEditingRecommendation] = useState<Recommendation | null>(null);
     const [regeneratingFrom, setRegeneratingFrom] = useState<Recommendation | null>(null);
 
-    useEffect(() => {
-        loadGroups(projectId);
-        fetchRecommendations();
-    }, [projectId]);
-
-    const fetchRecommendations = async () => {
+    const fetchRecommendations = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
@@ -48,7 +46,18 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [projectId]);
+
+    useEffect(() => {
+        loadGroups(projectId);
+        fetchRecommendations();
+    }, [projectId, recommendationsRefreshSignal, fetchRecommendations]);
+
+    // Trigger refresh when recommendation is saved/updated
+    const handleRecommendationSaved = useCallback(() => {
+        fetchRecommendations();
+        triggerRefresh('recommendations');
+    }, [fetchRecommendations, triggerRefresh]);
 
     const handleRefresh = () => {
         fetchRecommendations();
@@ -83,6 +92,8 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
         try {
             await updateRecommendation(id, { status: 'completed' });
             fetchRecommendations();
+            // Backend generates an insight when recommendation is completed
+            triggerRefresh('insights');
         } catch (err) {
             console.error('Failed to complete recommendation:', err);
         }
@@ -348,7 +359,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                     stakeholderGroups={groups}
                     projectGoal={selectedProject?.goal || null}
                     onClose={() => setShowGeneratorModal(false)}
-                    onSaved={fetchRecommendations}
+                    onSaved={handleRecommendationSaved}
                 />
             )}
 
@@ -361,7 +372,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                     rejectedRecommendationId={regeneratingFrom.id}
                     rejectionReason={regeneratingFrom.rejection_reason || undefined}
                     onClose={() => setRegeneratingFrom(null)}
-                    onSaved={fetchRecommendations}
+                    onSaved={handleRecommendationSaved}
                 />
             )}
 
@@ -380,7 +391,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                     recommendation={editingRecommendation}
                     stakeholderGroups={groups}
                     onClose={() => setEditingRecommendation(null)}
-                    onSaved={fetchRecommendations}
+                    onSaved={handleRecommendationSaved}
                 />
             )}
         </Fragment>
