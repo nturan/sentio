@@ -2,19 +2,20 @@
 # Stage 1: Build Frontend
 FROM node:20-alpine AS frontend-builder
 
-WORKDIR /app/frontend
+WORKDIR /app
 
-# Copy frontend package files
-COPY frontend/package*.json ./
+# Copy root package files (workspaces setup)
+COPY package*.json ./
+COPY frontend/package.json ./frontend/
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Copy frontend source
-COPY frontend/ ./
+COPY frontend/ ./frontend/
 
 # Build frontend
-RUN npm run build
+RUN cd frontend && npm run build
 
 # Stage 2: Python Backend with Frontend static files
 FROM python:3.11-slim
