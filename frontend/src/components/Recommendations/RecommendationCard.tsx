@@ -2,9 +2,8 @@ import { Check, Play, X, Edit2, RefreshCw, BarChart2, ChevronDown, ChevronUp } f
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Recommendation, RecommendationStatus } from '../../types/recommendation';
-import { RECOMMENDATION_TYPE_INFO, PRIORITY_INFO } from '../../types/recommendation';
+import { RECOMMENDATION_TYPE_INFO } from '../../types/recommendation';
 import type { StakeholderGroup } from '../../types/stakeholder';
-import { GROUP_TYPE_INFO } from '../../types/stakeholder';
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -34,7 +33,6 @@ export function RecommendationCard({
     const { t: tEnums } = useTranslation('enums');
     const [isExpanded, setIsExpanded] = useState(false);
     const typeInfo = RECOMMENDATION_TYPE_INFO[recommendation.recommendation_type];
-    const priorityInfo = PRIORITY_INFO[recommendation.priority];
 
     const formatDate = (dateStr: string | null) => {
         if (!dateStr) return '-';

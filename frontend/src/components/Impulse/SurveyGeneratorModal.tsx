@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { X, Sparkles, FileText, Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import type { StakeholderGroupWithAssessments } from '../../types/stakeholder';
 import type { ImpulseHistory, Survey, SurveyQuestion, SurveyQuestionType } from '../../types/impulse';
-import { GROUP_TYPE_INFO } from '../../types/stakeholder';
 import { generateSurvey, saveSurvey } from '../../services/api';
 import { useGeneratorChat } from '../../hooks/useGeneratorChat';
 import { GeneratorChatPanel } from '../GeneratorChat';
@@ -27,7 +26,6 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
     const [survey, setSurvey] = useState<Survey | null>(null);
     const [savedPath, setSavedPath] = useState<string | null>(null);
 
-    const typeInfo = GROUP_TYPE_INFO[group.group_type];
     const groupName = group.name || tEnums(`stakeholderTypes.${group.group_type}.name`);
 
     // Calculate context info for display
