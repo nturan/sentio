@@ -152,6 +152,82 @@ async def insight_create(
         return json.dumps(insight)
 
 
+async def insight_create_interactive(
+    project_id: str,
+    title: str,
+    content: str,
+    insight_type: str = None,
+    priority: str = None,
+    related_groups_json: str = "[]",
+    action_suggestions_json: str = "[]"
+) -> str:
+    """
+    Create an insight from chat content with interactive parameter clarification.
+    If insight_type or priority is not provided, returns a clarification request.
+    """
+    # Check if type needs clarification
+    if not insight_type:
+        return json.dumps({
+            "needs_clarification": True,
+            "field": "insight_type",
+            "message": "What type of insight is this?",
+            "options": list(VALID_TYPES),
+            "descriptions": {
+                "trend": "A pattern or direction over time",
+                "opportunity": "A potential area for improvement",
+                "warning": "A risk or concern that needs attention",
+                "success": "Something that worked well",
+                "pattern": "A recurring theme or behavior"
+            }
+        })
+
+    # Validate type
+    if insight_type not in VALID_TYPES:
+        return json.dumps({
+            "needs_clarification": True,
+            "field": "insight_type",
+            "message": f"Invalid type '{insight_type}'. Please choose from the options.",
+            "options": list(VALID_TYPES)
+        })
+
+    # Check if priority needs clarification
+    if not priority:
+        return json.dumps({
+            "needs_clarification": True,
+            "field": "priority",
+            "message": "What priority should this insight have?",
+            "options": list(VALID_PRIORITIES),
+            "descriptions": {
+                "high": "Urgent - requires immediate attention",
+                "medium": "Important - should be addressed soon",
+                "low": "Informational - good to know"
+            }
+        })
+
+    # Validate priority
+    if priority not in VALID_PRIORITIES:
+        return json.dumps({
+            "needs_clarification": True,
+            "field": "priority",
+            "message": f"Invalid priority '{priority}'. Please choose from the options.",
+            "options": list(VALID_PRIORITIES)
+        })
+
+    # All params valid - create the insight using existing function
+    return await insight_create(
+        project_id=project_id,
+        title=title,
+        content=content,
+        insight_type=insight_type,
+        priority=priority,
+        trigger_type="manual",
+        related_groups_json=related_groups_json,
+        related_recommendations_json="[]",
+        action_suggestions_json=action_suggestions_json,
+        trigger_entity_id=None
+    )
+
+
 async def insight_dismiss(insight_id: str) -> str:
     """Dismiss an insight (mark as acknowledged)."""
     with get_connection() as conn:
@@ -301,5 +377,43 @@ TOOLS = {
             "required": ["insight_id"]
         },
         "handler": insight_delete
+    },
+    "insight_create_interactive": {
+        "description": "Create an insight from chat content with interactive parameter clarification. If insight_type or priority is not provided, returns a clarification request that you should present to the user. Use this when the user wants to save something as an insight from the conversation.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "project_id": {
+                    "type": "string",
+                    "description": "The project ID to create the insight for"
+                },
+                "title": {
+                    "type": "string",
+                    "description": "A concise title for the insight"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "The insight content - the specific finding or observation to save"
+                },
+                "insight_type": {
+                    "type": "string",
+                    "description": "Type: trend, opportunity, warning, success, or pattern. If not sure, omit to ask user."
+                },
+                "priority": {
+                    "type": "string",
+                    "description": "Priority: high, medium, or low. If not sure, omit to ask user."
+                },
+                "related_groups_json": {
+                    "type": "string",
+                    "description": "JSON array of related stakeholder group IDs (default: [])"
+                },
+                "action_suggestions_json": {
+                    "type": "string",
+                    "description": "JSON array of suggested actions (default: [])"
+                }
+            },
+            "required": ["project_id", "title", "content"]
+        },
+        "handler": insight_create_interactive
     }
 }

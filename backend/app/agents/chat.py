@@ -8,11 +8,12 @@ from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import HumanMessage, AIMessage
 from .knowledge import KnowledgeAgent
 from .mcp_client import MCPClientManager
+from .web_search import web_search
 from ..constants import CORE_INDICATORS
 import json
 
 
-# Simplified system prompt - no longer stage-based
+# System prompt with web search and insight capabilities
 SYSTEM_PROMPT = """You are Sentio, an AI Change Management Assistant helping executives navigate organizational change.
 
 The project goal is: {goal}
@@ -22,9 +23,40 @@ You help with:
 - Providing guidance on stakeholder engagement
 - Answering questions about the project
 - Offering insights based on uploaded documents
+- Researching topics from the web
 
 The project uses these fixed assessment factors (Bewertungsfaktoren):
 {indicators}
+
+## Web Search
+You can use web_search(query, num_results) to research topics from the internet.
+When researching:
+1. Search for relevant information using specific queries
+2. Compile results as markdown with all sources cited
+3. After presenting research, ask if the user wants to save it as a project document
+
+## Saving Documents
+When the user confirms they want to save research or content as a document:
+- Use document_create with the project_id, a descriptive filename (e.g., "Research_TopicName.md"), and the content
+- The content should be well-formatted markdown
+
+## Saving Insights
+When the user says "save as insight", "this is important", "save this finding", etc:
+1. Extract the specific content they want to save
+2. Generate a concise title summarizing the insight
+3. Use insight_create_interactive tool
+4. If the tool returns needs_clarification, present the options to the user and ask them to choose:
+   - insight_type: trend (pattern over time), opportunity (improvement area), warning (risk), success (what worked), pattern (recurring theme)
+   - priority: high (urgent), medium (important), low (informational)
+5. If relevant, suggest related stakeholder groups based on the context
+
+## Combining Knowledge
+When combining web research with project knowledge:
+1. Use web_search for external perspectives and best practices
+2. Use retrieve_knowledge for project documents
+3. Use impulse_history_get for stakeholder feedback data
+4. Synthesize clearly, marking external vs internal sources
+5. Offer to save the combined analysis as a document and/or insight
 
 Be helpful, professional, and focus on practical change management advice. Use German when responding unless the user writes in English."""
 
@@ -50,15 +82,17 @@ class ChatAgent:
             result = await self.knowledge_agent.retrieve_context(query, project_id)
             return result.get("context", "No information found.")
 
-        # Get MCP tools for data retrieval
+        # Get MCP tools for data retrieval and creation
         mcp_tools = await MCPClientManager.get_tools_by_names([
             "project_get",
             "stakeholder_group_list",
             "impulse_history_get",
             "recommendation_list",
-            "document_retrieve_context"
+            "document_retrieve_context",
+            "document_create",
+            "insight_create_interactive"
         ])
-        self._tools = [retrieve_knowledge] + mcp_tools
+        self._tools = [retrieve_knowledge, web_search] + mcp_tools
 
         return self._tools
 

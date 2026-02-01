@@ -3,6 +3,8 @@ MCP Tools for Document operations.
 """
 
 import json
+import uuid
+from datetime import datetime
 
 from app.database import get_connection, dict_from_row
 
@@ -40,6 +42,78 @@ async def document_delete(document_id: str) -> str:
             "message": "Document deleted",
             "document_id": document_id,
             "filename": doc["filename"]
+        })
+
+
+async def document_create(
+    project_id: str,
+    filename: str,
+    content: str,
+    content_type: str = "text/markdown"
+) -> str:
+    """Create a document from text content and ingest into knowledge base."""
+    from langchain_openai import OpenAIEmbeddings
+    from langchain_chroma import Chroma
+    from langchain_core.documents import Document
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+    doc_id = str(uuid.uuid4())
+    now = datetime.utcnow().isoformat()
+    content_bytes = len(content.encode('utf-8'))
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+
+        # Verify project exists
+        cursor.execute("SELECT id FROM projects WHERE id = ?", (project_id,))
+        if not cursor.fetchone():
+            return json.dumps({"error": "Project not found", "project_id": project_id})
+
+        # Save document metadata to database
+        cursor.execute("""
+            INSERT INTO documents (id, project_id, filename, file_size, content_type, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (doc_id, project_id, filename, content_bytes, content_type, now))
+
+    # Ingest into vector store
+    try:
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        vector_store = Chroma(
+            collection_name="sentio_knowledge",
+            embedding_function=embeddings,
+            persist_directory="./chroma_db"
+        )
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=100
+        )
+
+        metadata = {
+            "projectId": project_id,
+            "source": filename,
+            "documentId": doc_id
+        }
+
+        docs = [Document(page_content=content, metadata=metadata)]
+        chunks = text_splitter.split_documents(docs)
+
+        if chunks:
+            vector_store.add_documents(chunks)
+
+        return json.dumps({
+            "success": True,
+            "document_id": doc_id,
+            "filename": filename,
+            "chunks_indexed": len(chunks),
+            "message": f"Document '{filename}' created and indexed successfully"
+        })
+
+    except Exception as e:
+        return json.dumps({
+            "success": True,
+            "document_id": doc_id,
+            "filename": filename,
+            "warning": f"Document saved but indexing failed: {str(e)}"
         })
 
 
@@ -127,5 +201,31 @@ TOOLS = {
             "required": ["project_id"]
         },
         "handler": document_retrieve_context
+    },
+    "document_create": {
+        "description": "Create a new document from text content and ingest it into the knowledge base. Use this to save research results, reports, or other text content as project documents.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "project_id": {
+                    "type": "string",
+                    "description": "The project ID to create the document for"
+                },
+                "filename": {
+                    "type": "string",
+                    "description": "Filename for the document (e.g., 'Research_ChangeManagement.md')"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "The document content (markdown supported)"
+                },
+                "content_type": {
+                    "type": "string",
+                    "description": "MIME type (default: text/markdown)"
+                }
+            },
+            "required": ["project_id", "filename", "content"]
+        },
+        "handler": document_create
     }
 }
