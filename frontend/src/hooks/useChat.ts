@@ -1,14 +1,17 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Message } from '../types/chat';
 import { API_CONFIG, postStream, getSession, saveMessage } from '../services/api';
+import i18n from '../i18n';
 
-const WELCOME_MESSAGE: Message = {
-    id: 'welcome',
-    role: 'assistant',
-    user: 'AI Assistant',
-    content: 'Willkommen zurück! Ich habe die neuesten Workshop-Ergebnisse analysiert. Es gibt Klärungsbedarf bei der IT-Führungsebene. Wie möchtest du fortfahren?',
-    timestamp: new Date().toISOString(),
-};
+function createWelcomeMessage(): Message {
+    return {
+        id: 'welcome',
+        role: 'assistant',
+        user: i18n.t('chat:aiAssistant'),
+        content: i18n.t('chat:welcomeMessage'),
+        timestamp: new Date().toISOString(),
+    };
+}
 
 // Generate a short title from message content
 function generateTitle(content: string): string {
@@ -27,7 +30,7 @@ interface UseChatOptions {
 }
 
 export function useChat(projectId: string, sessionId: string | null, options: UseChatOptions = {}) {
-    const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
+    const [messages, setMessages] = useState<Message[]>([createWelcomeMessage()]);
     const [isTyping, setIsTyping] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const lastSessionIdRef = useRef<string | null>(null);
@@ -44,13 +47,13 @@ export function useChat(projectId: string, sessionId: string | null, options: Us
             .then(session => {
                 if (session.messages.length === 0) {
                     // New session - show welcome message
-                    setMessages([WELCOME_MESSAGE]);
+                    setMessages([createWelcomeMessage()]);
                 } else {
                     // Convert session messages to Message format
                     const loadedMessages: Message[] = session.messages.map(m => ({
                         id: m.id,
                         role: m.role,
-                        user: m.role === 'user' ? 'Du' : 'AI Assistant',
+                        user: m.role === 'user' ? i18n.t('chat:userLabel') : i18n.t('chat:aiAssistant'),
                         content: m.content,
                         timestamp: m.created_at,
                     }));
@@ -59,7 +62,7 @@ export function useChat(projectId: string, sessionId: string | null, options: Us
             })
             .catch(err => {
                 console.error('Failed to load session messages:', err);
-                setMessages([WELCOME_MESSAGE]);
+                setMessages([createWelcomeMessage()]);
             })
             .finally(() => {
                 setIsLoading(false);
@@ -75,7 +78,7 @@ export function useChat(projectId: string, sessionId: string | null, options: Us
         const newMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
-            user: 'Du',
+            user: i18n.t('chat:userLabel'),
             content,
             timestamp: new Date().toISOString(),
         };
@@ -114,7 +117,7 @@ export function useChat(projectId: string, sessionId: string | null, options: Us
             const initialResponseMsg: Message = {
                 id: responseId,
                 role: 'assistant',
-                user: 'AI Assistant',
+                user: i18n.t('chat:aiAssistant'),
                 content: '',
                 timestamp: new Date().toISOString(),
             };
@@ -156,7 +159,7 @@ export function useChat(projectId: string, sessionId: string | null, options: Us
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
                 user: 'System',
-                content: 'Fehler bei der Verbindung zum AI-Service. Bitte überprüfen Sie Ihre Verbindung.',
+                content: i18n.t('chat:errorMessage'),
                 timestamp: new Date().toISOString(),
             };
             setMessages(prev => [...prev, errorMsg]);

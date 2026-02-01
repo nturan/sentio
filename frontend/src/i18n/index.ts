@@ -52,12 +52,15 @@ const resources = {
     },
 };
 
+// Get locale from environment variable, default to 'en'
+const locale = import.meta.env.VITE_LOCALE || 'en';
+
 i18n
     .use(initReactI18next)
     .init({
         resources,
-        lng: 'de',
-        fallbackLng: 'de',
+        lng: locale,
+        fallbackLng: 'en',
         defaultNS: 'common',
         ns: [
             'common',

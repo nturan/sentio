@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, type KeyboardEvent } from 'react';
 import { Send, Loader2, MessageSquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { GeneratorChatMessage } from '../../types/generatorChat';
 import { cn } from '../../utils/cn';
 
@@ -10,7 +11,7 @@ interface GeneratorChatPanelProps {
     placeholder?: string;
 }
 
-function CompactMessageBubble({ message }: { message: GeneratorChatMessage }) {
+function CompactMessageBubble({ message, userLabel }: { message: GeneratorChatMessage; userLabel: string }) {
     const isUser = message.role === 'user';
 
     return (
@@ -20,7 +21,7 @@ function CompactMessageBubble({ message }: { message: GeneratorChatMessage }) {
                 "w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold shrink-0",
                 isUser ? 'bg-blue-600 text-white' : 'bg-indigo-600 text-white'
             )}>
-                {isUser ? 'DU' : 'AI'}
+                {isUser ? userLabel.substring(0, 2).toUpperCase() : 'AI'}
             </div>
 
             {/* Content */}
@@ -57,11 +58,15 @@ export function GeneratorChatPanel({
     messages,
     onSendMessage,
     isTyping,
-    placeholder = "Fragen oder Aenderungswuensche eingeben..."
+    placeholder
 }: GeneratorChatPanelProps) {
+    const { t } = useTranslation('chat');
     const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const userLabel = t('userLabel');
+    const actualPlaceholder = placeholder || t('generator.placeholder');
 
     // Auto-scroll to bottom on new messages
     useEffect(() => {
@@ -88,10 +93,10 @@ export function GeneratorChatPanel({
             <div style={{ flexShrink: 0 }} className="px-4 py-3 border-b border-gray-200 bg-white">
                 <div className="flex items-center gap-2">
                     <MessageSquare size={16} className="text-indigo-600" />
-                    <h3 className="text-sm font-semibold text-gray-800">AI-Assistent</h3>
+                    <h3 className="text-sm font-semibold text-gray-800">{t('generator.title')}</h3>
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">
-                    Fragen stellen oder Aenderungen anfordern
+                    {t('generator.subtitle')}
                 </p>
             </div>
 
@@ -103,24 +108,24 @@ export function GeneratorChatPanel({
                             <MessageSquare size={20} className="text-indigo-600" />
                         </div>
                         <p className="text-sm text-gray-500 max-w-[200px] mx-auto">
-                            Stellen Sie Fragen zum Projekt oder bitten Sie um Aenderungen an der Empfehlung.
+                            {t('generator.emptyState')}
                         </p>
                         <div className="mt-4 space-y-2">
-                            <p className="text-xs text-gray-400">Beispiele:</p>
+                            <p className="text-xs text-gray-400">{t('generator.examples')}</p>
                             <div className="space-y-1">
                                 <button
-                                    onClick={() => onSendMessage("Was sind die aktuellen Stakeholder-Gruppen?")}
+                                    onClick={() => onSendMessage(t('generator.exampleQuestions.stakeholders'))}
                                     className="text-xs text-indigo-600 hover:text-indigo-700 hover:underline block mx-auto"
                                     disabled={isTyping}
                                 >
-                                    "Was sind die aktuellen Stakeholder-Gruppen?"
+                                    "{t('generator.exampleQuestions.stakeholders')}"
                                 </button>
                                 <button
-                                    onClick={() => onSendMessage("Setze die Prioritaet auf hoch")}
+                                    onClick={() => onSendMessage(t('generator.exampleQuestions.priority'))}
                                     className="text-xs text-indigo-600 hover:text-indigo-700 hover:underline block mx-auto"
                                     disabled={isTyping}
                                 >
-                                    "Setze die Prioritaet auf hoch"
+                                    "{t('generator.exampleQuestions.priority')}"
                                 </button>
                             </div>
                         </div>
@@ -128,7 +133,7 @@ export function GeneratorChatPanel({
                 )}
 
                 {messages.map(message => (
-                    <CompactMessageBubble key={message.id} message={message} />
+                    <CompactMessageBubble key={message.id} message={message} userLabel={userLabel} />
                 ))}
 
                 {isTyping && <TypingIndicator />}
@@ -145,7 +150,7 @@ export function GeneratorChatPanel({
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder={placeholder}
+                        placeholder={actualPlaceholder}
                         disabled={isTyping}
                         className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                     />

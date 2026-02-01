@@ -1,4 +1,19 @@
 {
     "inputPlaceholder": "Schreibe eine Nachricht...",
-    "upload": "Upload"
+    "upload": "Upload",
+    "welcomeMessage": "Willkommen zurück! Ich habe die neuesten Workshop-Ergebnisse analysiert. Es gibt Klärungsbedarf bei der IT-Führungsebene. Wie möchtest du fortfahren?",
+    "errorMessage": "Fehler bei der Verbindung zum AI-Service. Bitte überprüfen Sie Ihre Verbindung.",
+    "userLabel": "Du",
+    "aiAssistant": "AI-Assistent",
+    "generator": {
+        "title": "AI-Assistent",
+        "subtitle": "Fragen stellen oder Aenderungen anfordern",
+        "placeholder": "Fragen oder Aenderungswuensche eingeben...",
+        "emptyState": "Stellen Sie Fragen zum Projekt oder bitten Sie um Aenderungen an der Empfehlung.",
+        "examples": "Beispiele:",
+        "exampleQuestions": {
+            "stakeholders": "Was sind die aktuellen Stakeholder-Gruppen?",
+            "priority": "Setze die Prioritaet auf hoch"
+        }
+    }
 }
