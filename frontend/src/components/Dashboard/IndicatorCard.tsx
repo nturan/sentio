@@ -1,18 +1,23 @@
-import { Info } from 'lucide-react';
+import { Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface IndicatorCardProps {
     name: string;
     description: string;
     averageRating: number | null;
     latestRating: number | null;
+    previousRating: number | null;
     ratingCount: number;
 }
 
-export function IndicatorCard({ name, description, averageRating, latestRating, ratingCount }: IndicatorCardProps) {
+export function IndicatorCard({ name, description, averageRating, latestRating, previousRating, ratingCount }: IndicatorCardProps) {
     const hasData = ratingCount > 0 && averageRating !== null;
 
     // Convert rating (1-10) to percentage (10-100%)
     const displayPercent = hasData ? Math.round(averageRating * 10) : null;
+
+    // Calculate change between latest and previous rating
+    const hasChange = latestRating !== null && previousRating !== null;
+    const changePercent = hasChange ? (latestRating - previousRating) * 10 : null;
 
     // Get color based on percentage
     const getColor = (percent: number | null) => {
@@ -47,6 +52,27 @@ export function IndicatorCard({ name, description, averageRating, latestRating, 
                         <p className="text-xs text-gray-500 mt-1">
                             {ratingCount} Bewertung{ratingCount !== 1 ? 'en' : ''}
                         </p>
+                        {/* Change indicator */}
+                        {hasChange && (
+                            <div className="mt-2">
+                                {changePercent! > 0 ? (
+                                    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                                        <TrendingUp size={12} />
+                                        +{changePercent}%
+                                    </span>
+                                ) : changePercent! < 0 ? (
+                                    <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
+                                        <TrendingDown size={12} />
+                                        {changePercent}%
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400">
+                                        <Minus size={12} />
+                                        ~
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </>
                 ) : (
                     <>

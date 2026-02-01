@@ -188,12 +188,27 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                         overflowY: 'auto',
                         padding: '24px'
                     }} className="space-y-6">
-                        {/* Context Info - Compact */}
-                        <div className="bg-gray-50 rounded-lg px-3 py-2 text-xs text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
-                            <span><strong>Gruppe:</strong> {group.name || typeInfo?.name}</span>
-                            <span><strong>Position:</strong> {group.mendelow_quadrant}</span>
-                            {avgRating && <span><strong>Impulse:</strong> {impulses.length}x, Ø {avgRating}</span>}
-                            {weakestIndicator && <span><strong>Schwach:</strong> {weakestIndicator.key} ({weakestIndicator.avg.toFixed(1)})</span>}
+                        {/* Context Info */}
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <h3 className="text-sm font-medium text-gray-700 mb-2">Kontext fuer den Agenten:</h3>
+                            <ul className="text-sm text-gray-600 space-y-1">
+                                <li>
+                                    <span className="text-gray-400">•</span> Gruppe: {group.name || typeInfo?.name}
+                                </li>
+                                <li>
+                                    <span className="text-gray-400">•</span> Position: {group.mendelow_quadrant} ({group.mendelow_strategy})
+                                </li>
+                                {avgRating && (
+                                    <li>
+                                        <span className="text-gray-400">•</span> Letzte {impulses.length} Impulse: Durchschnitt {avgRating}
+                                    </li>
+                                )}
+                                {weakestIndicator && (
+                                    <li>
+                                        <span className="text-gray-400">•</span> Schwachstelle: {weakestIndicator.key} (Durchschnitt {weakestIndicator.avg.toFixed(1)})
+                                    </li>
+                                )}
+                            </ul>
                         </div>
 
                         {/* Generate Button or Survey Editor */}

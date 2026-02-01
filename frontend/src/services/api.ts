@@ -39,6 +39,7 @@ export interface DashboardIndicatorScore {
     description: string;
     average_rating: number | null;
     latest_rating: number | null;
+    previous_rating: number | null;
     rating_count: number;
 }
 

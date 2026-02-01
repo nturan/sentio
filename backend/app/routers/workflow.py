@@ -66,6 +66,7 @@ class DashboardIndicatorScore(BaseModel):
     description: str
     average_rating: Optional[float]
     latest_rating: Optional[int]
+    previous_rating: Optional[int]
     rating_count: int
 
 
@@ -135,6 +136,7 @@ async def get_dashboard_data(project_id: str):
                 description=ind["description"],
                 average_rating=sum(ratings) / len(ratings) if ratings else None,
                 latest_rating=ratings[-1] if ratings else None,
+                previous_rating=ratings[-2] if len(ratings) >= 2 else None,
                 rating_count=len(ratings)
             )
 

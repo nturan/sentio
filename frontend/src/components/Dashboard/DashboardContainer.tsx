@@ -117,6 +117,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                                         description={indicator.description}
                                         averageRating={indicator.average_rating}
                                         latestRating={indicator.latest_rating}
+                                        previousRating={indicator.previous_rating}
                                         ratingCount={indicator.rating_count}
                                     />
                                 ))}
