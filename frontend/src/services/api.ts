@@ -548,3 +548,55 @@ export async function regenerateRecommendation(recId: string, additionalContext?
     }
     return response.json();
 }
+
+// --- Insights API functions ---
+
+import type { Insight, GenerateInsightResponse } from '../types/insight';
+
+export async function listInsights(projectId: string, includeDismissed: boolean = false): Promise<Insight[]> {
+    const url = `/api/projects/${projectId}/insights?include_dismissed=${includeDismissed}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to list insights: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function getInsight(insightId: string): Promise<Insight> {
+    const response = await fetch(`/api/insights/${insightId}`);
+    if (!response.ok) {
+        throw new Error(`Failed to get insight: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function generateInsight(projectId: string, focus?: string): Promise<GenerateInsightResponse> {
+    const response = await fetch(`/api/projects/${projectId}/insights/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ focus })
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to generate insight: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function dismissInsight(insightId: string): Promise<Insight> {
+    const response = await fetch(`/api/insights/${insightId}/dismiss`, {
+        method: 'PATCH'
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to dismiss insight: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export async function deleteInsight(insightId: string): Promise<void> {
+    const response = await fetch(`/api/insights/${insightId}`, {
+        method: 'DELETE'
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to delete insight: ${response.statusText}`);
+    }
+}

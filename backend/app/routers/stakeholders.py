@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 import uuid
+import asyncio
 
 from ..database import get_connection, dict_from_row
 from ..constants import (
@@ -464,12 +465,39 @@ async def batch_add_assessments(group_id: str, assessments: List[StakeholderAsse
                 "error": e.detail
             })
 
+    # Trigger insight generation on successful batch completion
+    if len(results) > 0 and len(errors) == 0:
+        # Get project_id from group
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT project_id FROM stakeholder_groups WHERE id = ?", (group_id,))
+            row = cursor.fetchone()
+            if row:
+                project_id = row["project_id"]
+                # Fire and forget - generate insight in background
+                asyncio.create_task(_generate_impulse_insight(project_id, group_id))
+
     return {
         "success_count": len(results),
         "error_count": len(errors),
         "results": results,
         "errors": errors
     }
+
+
+async def _generate_impulse_insight(project_id: str, group_id: str):
+    """Background task to generate insight after impulse completion."""
+    try:
+        from .insights import generate_and_save_insight
+        await generate_and_save_insight(
+            project_id=project_id,
+            trigger_type="impulse_completed",
+            trigger_context={"group_id": group_id},
+            trigger_entity_id=group_id
+        )
+        print(f"Generated insight for impulse completion (project={project_id}, group={group_id})")
+    except Exception as e:
+        print(f"Error generating impulse insight: {e}")
 
 
 # --- Impulse History Endpoints ---

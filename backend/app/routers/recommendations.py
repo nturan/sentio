@@ -9,6 +9,7 @@ from datetime import datetime
 from enum import Enum
 import uuid
 import json
+import asyncio
 
 from ..database import get_connection, dict_from_row
 from ..agents.recommendations import RecommendationAgent
@@ -368,6 +369,11 @@ async def update_recommendation(recommendation_id: str, request: UpdateRecommend
             values
         )
 
+        # Trigger insight generation when recommendation is completed
+        if request.status == RecommendationStatus.completed:
+            project_id = current["project_id"]
+            asyncio.create_task(_generate_completion_insight(project_id, recommendation_id))
+
         # Return updated recommendation
         cursor.execute("SELECT * FROM recommendations WHERE id = ?", (recommendation_id,))
         return row_to_recommendation(cursor.fetchone())
@@ -460,3 +466,18 @@ async def regenerate_recommendation(recommendation_id: str, request: RegenerateR
     except Exception as e:
         print(f"Error regenerating recommendation: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to regenerate recommendation: {str(e)}")
+
+
+async def _generate_completion_insight(project_id: str, recommendation_id: str):
+    """Background task to generate insight after recommendation completion."""
+    try:
+        from .insights import generate_and_save_insight
+        await generate_and_save_insight(
+            project_id=project_id,
+            trigger_type="recommendation_completed",
+            trigger_context={"recommendation_id": recommendation_id},
+            trigger_entity_id=recommendation_id
+        )
+        print(f"Generated insight for recommendation completion (project={project_id}, recommendation={recommendation_id})")
+    except Exception as e:
+        print(f"Error generating completion insight: {e}")

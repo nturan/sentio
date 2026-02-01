@@ -27,6 +27,7 @@ from mcp_server.tools import sessions as sessions_tools
 from mcp_server.tools import surveys as surveys_tools
 from mcp_server.tools import documents as documents_tools
 from mcp_server.tools import workflow as workflow_tools
+from mcp_server.tools import insights as insights_tools
 
 # Create the MCP server
 server = Server("sentio-mcp")
@@ -46,6 +47,7 @@ def collect_tools():
         surveys_tools,
         documents_tools,
         workflow_tools,
+        insights_tools,
     ]
 
     for module in modules:

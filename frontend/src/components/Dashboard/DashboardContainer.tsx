@@ -11,6 +11,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { IndicatorCard } from './IndicatorCard';
+import { InsightsSection } from './InsightsSection';
 import { getDashboardData, type DashboardData, type DashboardIndicatorScore } from '../../services/api';
 
 interface DashboardContainerProps {
@@ -217,6 +218,9 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                                 </div>
                             </div>
                         )}
+
+                        {/* Insights Section */}
+                        <InsightsSection projectId={projectId} />
                     </>
                 )}
             </div>

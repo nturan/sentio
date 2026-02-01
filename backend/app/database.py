@@ -215,6 +215,26 @@ def init_database():
             )
         """)
 
+        # Create insights table - AI-generated observations
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS insights (
+                id TEXT PRIMARY KEY,
+                project_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL,
+                insight_type TEXT NOT NULL CHECK(insight_type IN ('trend', 'opportunity', 'warning', 'success', 'pattern')),
+                priority TEXT NOT NULL DEFAULT 'medium' CHECK(priority IN ('high', 'medium', 'low')),
+                trigger_type TEXT NOT NULL CHECK(trigger_type IN ('manual', 'impulse_completed', 'recommendation_completed')),
+                trigger_entity_id TEXT,
+                related_groups TEXT,
+                related_recommendations TEXT,
+                action_suggestions TEXT,
+                is_dismissed BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+            )
+        """)
+
         # Create indexes for better query performance
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_sessions_project_id
@@ -275,6 +295,14 @@ def init_database():
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_recommendations_status
             ON recommendations(status)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_insights_project_id
+            ON insights(project_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_insights_created_at
+            ON insights(created_at)
         """)
 
         conn.commit()
