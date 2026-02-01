@@ -128,6 +128,11 @@ Due to the 2-day hackathon timeframe, the following features were intentionally 
 - Knowledge base supports text files only
 - No PDF, Word, or PowerPoint parsing
 
+### CI/CD & Testing
+- No automated test suite
+- No CI/CD pipeline
+- Manual deployment only
+
 ## Future Roadmap
 
 ### Survey Channels (Planned)
