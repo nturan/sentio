@@ -1,0 +1,49 @@
+{
+    "title": "Impulses",
+    "newImpulse": "New Impulse",
+    "description": "Regularly record impulses for your stakeholder groups to track development in the change process.",
+    "noGroups": {
+        "title": "No stakeholder groups yet",
+        "description": "First create stakeholder groups in the Stakeholder tab to record impulses."
+    },
+    "allImpulses": "All Impulses",
+    "noImpulses": "No impulses recorded yet",
+    "table": {
+        "date": "Date",
+        "group": "Group",
+        "type": "Type",
+        "average": "Average",
+        "source": "Source"
+    },
+    "source": {
+        "survey": "Survey",
+        "manual": "Manual"
+    },
+    "details": {
+        "title": "Ratings in Detail",
+        "noRatings": "No individual ratings available"
+    },
+    "selectGroup": "Select Stakeholder Group",
+    "selectAction": "Select action:",
+    "manualAssessment": "Manual Assessment",
+    "createSurvey": "Create Survey",
+    "modal": {
+        "title": "New Assessment",
+        "factorsRated": "{{completed}} of {{total}} factors rated",
+        "dateLabel": "Date",
+        "dateHint": "Default: Today. You can also enter past dates.",
+        "rateAtLeastOne": "Please rate at least one factor.",
+        "saveFailed": "Failed to save assessments."
+    },
+    "indicators": {
+        "orientierung_sinn": "Orientation & Purpose",
+        "psychologische_sicherheit": "Psychological Safety",
+        "empowerment": "Empowerment",
+        "partizipation": "Participation",
+        "wertschaetzung": "Appreciation",
+        "ressourcenfreigabe": "Resource Release",
+        "aktive_kommunikation": "Active Communication",
+        "widerstandsmanagement": "Resistance Management",
+        "vorbildfunktion": "Role Model Function"
+    }
+}

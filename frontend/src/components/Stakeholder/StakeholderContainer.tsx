@@ -1,6 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { createPortal } from 'react-dom';
 import { Users, Plus, RefreshCw, X, ClipboardCheck, FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useStakeholder } from '../../context/StakeholderContext';
 import { MendelowMatrix } from './MendelowMatrix';
 import { StakeholderGroupCard } from './StakeholderGroupCard';
@@ -24,6 +25,7 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
         selectGroup,
         deleteGroup,
     } = useStakeholder();
+    const { t } = useTranslation('stakeholder');
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedGroupForImpulse, setSelectedGroupForImpulse] = useState<StakeholderGroupWithAssessments | null>(null);
@@ -40,7 +42,7 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
     };
 
     const handleDeleteGroup = async (groupId: string) => {
-        if (confirm('Sind Sie sicher, dass Sie diese Stakeholder-Gruppe loeschen moechten?')) {
+        if (confirm(t('deleteConfirm'))) {
             await deleteGroup(groupId);
         }
     };
@@ -96,7 +98,7 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Users className="text-blue-600" size={24} />
-                            <h1 className="text-2xl font-bold text-gray-800">Stakeholder</h1>
+                            <h1 className="text-2xl font-bold text-gray-800">{t('title')}</h1>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -111,7 +113,7 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
                                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                             >
                                 <Plus size={16} />
-                                Stakeholder-Gruppe hinzufuegen
+                                {t('addGroup')}
                             </button>
                         </div>
                     </div>
@@ -123,23 +125,23 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
                     ) : groups.length === 0 ? (
                         <div className="text-center py-20">
                             <Users size={48} className="mx-auto text-gray-300 mb-4" />
-                            <h2 className="text-lg font-medium text-gray-700 mb-2">Noch keine Stakeholder-Gruppen</h2>
+                            <h2 className="text-lg font-medium text-gray-700 mb-2">{t('noGroups.title')}</h2>
                             <p className="text-sm text-gray-500 mb-4">
-                                Fuegen Sie Ihre erste Stakeholder-Gruppe hinzu, um mit der Bewertung zu beginnen.
+                                {t('noGroups.description')}
                             </p>
                             <button
                                 onClick={() => setShowAddModal(true)}
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                             >
                                 <Plus size={16} />
-                                Erste Gruppe hinzufuegen
+                                {t('addFirstGroup')}
                             </button>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Stakeholder List */}
                             <div className="lg:col-span-2 space-y-4">
-                                <h2 className="text-lg font-semibold text-gray-700">Stakeholder-Gruppen</h2>
+                                <h2 className="text-lg font-semibold text-gray-700">{t('groupsTitle')}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {groups.map(group => (
                                         <StakeholderGroupCard
@@ -204,7 +206,7 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
                     >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                             <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937', margin: 0 }}>
-                                Neuer Impuls
+                                {t('newImpulse')}
                             </h2>
                             <button
                                 onClick={() => setShowActionChoice(null)}
@@ -214,7 +216,7 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
                             </button>
                         </div>
                         <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
-                            Wie moechten Sie den Impuls fuer <strong>{showActionChoice.name || showActionChoice.group_type}</strong> erfassen?
+                            {t('impulseChoice', { groupName: showActionChoice.name || showActionChoice.group_type })}
                         </p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <button
@@ -235,7 +237,7 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
                                 }}
                             >
                                 <ClipboardCheck size={20} />
-                                Manuelle Bewertung
+                                {t('manualAssessment')}
                             </button>
                             <button
                                 onClick={handleChooseSurvey}
@@ -255,7 +257,7 @@ export function StakeholderContainer({ projectId }: StakeholderContainerProps) {
                                 }}
                             >
                                 <FileText size={20} />
-                                Umfrage erstellen
+                                {t('createSurvey')}
                             </button>
                         </div>
                     </div>

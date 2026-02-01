@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useProjects } from '../../context/ProjectContext';
 import { ProjectItem } from './ProjectItem';
 import { NewProjectButton } from './NewProjectButton';
@@ -9,6 +10,7 @@ interface SidebarProps {
 
 export function Sidebar({ onStartNewProject }: SidebarProps) {
     const { projects, selectedProject, setSelectedProject, isLoading } = useProjects();
+    const { t } = useTranslation('navigation');
 
     return (
         <aside className="w-[300px] bg-white border-r border-gray-200 flex flex-col py-4 gap-2 shadow-sm z-30 shrink-0">
@@ -25,7 +27,7 @@ export function Sidebar({ onStartNewProject }: SidebarProps) {
 
             {/* Projects Section Title */}
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider px-4">
-                Projekte
+                {t('sidebar.projects')}
             </span>
 
             {/* Project List */}

@@ -1,0 +1,49 @@
+{
+    "title": "Impulse",
+    "newImpulse": "Neuer Impuls",
+    "description": "Erfassen Sie regelmaessig Impulse zu Ihren Stakeholder-Gruppen, um die Entwicklung im Change-Prozess zu verfolgen.",
+    "noGroups": {
+        "title": "Noch keine Stakeholder-Gruppen",
+        "description": "Erstellen Sie zuerst Stakeholder-Gruppen im Stakeholder-Tab, um Impulse erfassen zu koennen."
+    },
+    "allImpulses": "Alle Impulse",
+    "noImpulses": "Noch keine Impulse erfasst",
+    "table": {
+        "date": "Datum",
+        "group": "Gruppe",
+        "type": "Typ",
+        "average": "Durchschnitt",
+        "source": "Quelle"
+    },
+    "source": {
+        "survey": "Umfrage",
+        "manual": "Manuell"
+    },
+    "details": {
+        "title": "Bewertungen im Detail",
+        "noRatings": "Keine Einzelbewertungen verfuegbar"
+    },
+    "selectGroup": "Stakeholder-Gruppe waehlen",
+    "selectAction": "Aktion waehlen:",
+    "manualAssessment": "Manuelle Bewertung",
+    "createSurvey": "Umfrage erstellen",
+    "modal": {
+        "title": "Neue Bewertung",
+        "factorsRated": "{{completed}} von {{total}} Faktoren bewertet",
+        "dateLabel": "Datum",
+        "dateHint": "Standard: Heute. Sie koennen auch vergangene Daten eintragen.",
+        "rateAtLeastOne": "Bitte bewerten Sie mindestens einen Faktor.",
+        "saveFailed": "Fehler beim Speichern der Bewertungen."
+    },
+    "indicators": {
+        "orientierung_sinn": "Orientierung & Sinn",
+        "psychologische_sicherheit": "Psychologische Sicherheit",
+        "empowerment": "Empowerment",
+        "partizipation": "Partizipation",
+        "wertschaetzung": "Wertschaetzung",
+        "ressourcenfreigabe": "Ressourcenfreigabe",
+        "aktive_kommunikation": "Aktive Kommunikation",
+        "widerstandsmanagement": "Widerstandsmanagement",
+        "vorbildfunktion": "Vorbildfunktion"
+    }
+}

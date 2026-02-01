@@ -1,4 +1,5 @@
 import { useState, Component, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from './components/Layout/AppLayout';
 import { TabNavigation } from './components/Layout/TabNavigation';
 import { ChatContainer } from './components/Chat/ChatContainer';
@@ -10,6 +11,7 @@ import { SettingsContainer } from './components/Settings/SettingsContainer';
 import { useProjects } from './context/ProjectContext';
 import { StakeholderProvider } from './context/StakeholderContext';
 import { RefreshProvider } from './context/RefreshContext';
+import i18n from './i18n';
 
 // Error Boundary to catch rendering errors
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -31,13 +33,13 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
       return (
         <div className="flex items-center justify-center h-screen bg-gray-50">
           <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-700 mb-2">Etwas ist schiefgelaufen</h2>
-            <p className="text-gray-500 mb-4">Bitte laden Sie die Seite neu.</p>
+            <h2 className="text-xl font-bold text-gray-700 mb-2">{i18n.t('common:errors.generic')}</h2>
+            <p className="text-gray-500 mb-4">{i18n.t('common:errors.reloadPage')}</p>
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              Neu laden
+              {i18n.t('common:buttons.reload')}
             </button>
           </div>
         </div>
@@ -51,6 +53,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 function AppContent() {
   const [activeTab, setActiveTab] = useState('chat');
   const { selectedProject } = useProjects();
+  const { t } = useTranslation('common');
 
   return (
     <div className="flex flex-col h-full">
@@ -88,7 +91,7 @@ function AppContent() {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-gray-400">Waehlen Sie ein Projekt aus der Seitenleiste</p>
+            <p className="text-gray-400">{t('selectProjectFromSidebar')}</p>
           </div>
         )}
       </div>

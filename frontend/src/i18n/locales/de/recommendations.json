@@ -1,0 +1,21 @@
+{
+    "title": "Handlungen",
+    "actions": {
+        "approve": "Genehmigen",
+        "reject": "Ablehnen",
+        "edit": "Bearbeiten",
+        "start": "Starten",
+        "markCompleted": "Als abgeschlossen markieren",
+        "measureImpact": "Wirkung messen (Impuls starten)",
+        "regenerate": "Neue Empfehlung generieren"
+    },
+    "meta": {
+        "steps": "Schritte:",
+        "affects": "Betrifft:",
+        "created": "Erstellt:",
+        "approved": "Genehmigt:",
+        "started": "Gestartet:",
+        "completed": "Abgeschlossen:",
+        "reason": "Grund:"
+    }
+}

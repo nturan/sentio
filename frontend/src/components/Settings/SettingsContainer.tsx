@@ -1,8 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Save, Upload, FileText, Trash2, Loader2, CheckCircle, Settings, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useProjects } from '../../context/ProjectContext';
 import { useRefresh, useRefreshSignal } from '../../context/RefreshContext';
 import { listDocuments, uploadDocument, deleteDocument, type DocumentData } from '../../services/api';
+import { formatDateTime } from '../../utils/formatting';
 
 interface UploadedFile {
     file: File;
@@ -23,21 +25,12 @@ function formatFileSize(bytes: number | null): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('de-DE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
 
 export function SettingsContainer({ projectId: _projectId }: SettingsContainerProps) {
     const { selectedProject, refreshProjects } = useProjects();
     const { triggerRefresh } = useRefresh();
     const documentsRefreshSignal = useRefreshSignal('documents');
+    const { t } = useTranslation(['settings', 'common']);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
         name: selectedProject?.name || '',
@@ -86,7 +79,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
             setDocuments(docs);
         } catch (err) {
             console.error('Failed to load documents:', err);
-            setDocsError('Dokumente konnten nicht geladen werden');
+            setDocsError(t('settings:documents.loadFailed'));
         } finally {
             setIsLoadingDocs(false);
         }
@@ -166,7 +159,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                 ));
             } catch (error) {
                 setFiles(prev => prev.map((f, idx) =>
-                    idx === i ? { ...f, status: 'error', error: 'Upload fehlgeschlagen' } : f
+                    idx === i ? { ...f, status: 'error', error: t('common:errors.uploadFailed') } : f
                 ));
             }
         }
@@ -199,7 +192,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
     if (!selectedProject) {
         return (
             <div className="flex-1 flex items-center justify-center">
-                <p className="text-gray-400">Kein Projekt ausgewaehlt</p>
+                <p className="text-gray-400">{t('common:noProjectSelected')}</p>
             </div>
         );
     }
@@ -210,19 +203,19 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <Settings className="text-gray-400" size={24} />
-                    <h1 className="text-2xl font-bold text-gray-800">Einstellungen</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">{t('settings:title')}</h1>
                 </div>
 
                 {/* Project Info Card */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-700">Projektdetails</h2>
+                        <h2 className="text-lg font-semibold text-gray-700">{t('settings:projectDetails')}</h2>
                         {!isEditing ? (
                             <button
                                 onClick={() => setIsEditing(true)}
                                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                             >
-                                Bearbeiten
+                                {t('common:buttons.edit')}
                             </button>
                         ) : (
                             <div className="flex gap-2">
@@ -237,7 +230,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                                     }}
                                     className="text-sm text-gray-500 hover:text-gray-700 font-medium"
                                 >
-                                    Abbrechen
+                                    {t('common:buttons.cancel')}
                                 </button>
                                 <button
                                     onClick={handleSave}
@@ -245,7 +238,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                                     className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
                                 >
                                     {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                                    Speichern
+                                    {t('common:buttons.save')}
                                 </button>
                             </div>
                         )}
@@ -256,7 +249,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                             {/* Name */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                                    Projektname
+                                    {t('settings:projectName')}
                                 </label>
                                 <input
                                     type="text"
@@ -269,7 +262,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                             {/* Icon */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-600 mb-2">
-                                    Icon
+                                    {t('settings:icon')}
                                 </label>
                                 <div className="flex flex-wrap gap-2">
                                     {EMOJI_OPTIONS.map(emoji => (
@@ -290,14 +283,14 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                             {/* Goal */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                                    Projektziel
+                                    {t('settings:projectGoal')}
                                 </label>
                                 <textarea
                                     value={editForm.goal}
                                     onChange={(e) => setEditForm({ ...editForm, goal: e.target.value })}
                                     rows={4}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                                    placeholder="Beschreiben Sie das Ziel Ihres Projekts..."
+                                    placeholder={t('settings:goalPlaceholder')}
                                 />
                             </div>
                         </div>
@@ -307,12 +300,12 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                                 <span className="text-4xl">{selectedProject.icon}</span>
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-800">{selectedProject.name}</h3>
-                                    <p className="text-sm text-gray-500">Projekt-ID: {selectedProject.id.slice(0, 8)}...</p>
+                                    <p className="text-sm text-gray-500">{t('settings:projectId')} {selectedProject.id.slice(0, 8)}...</p>
                                 </div>
                             </div>
                             {selectedProject.goal && (
                                 <div className="bg-gray-50 rounded-xl p-4">
-                                    <p className="text-sm text-gray-600 font-medium mb-1">Projektziel:</p>
+                                    <p className="text-sm text-gray-600 font-medium mb-1">{t('settings:projectGoal')}:</p>
                                     <p className="text-sm text-gray-700">{selectedProject.goal}</p>
                                 </div>
                             )}
@@ -323,8 +316,8 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                 {/* Existing Documents Card */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-700">Hochgeladene Dokumente</h2>
-                        <span className="text-sm text-gray-500">{documents.length} Dokument{documents.length !== 1 ? 'e' : ''}</span>
+                        <h2 className="text-lg font-semibold text-gray-700">{t('settings:documents.title')}</h2>
+                        <span className="text-sm text-gray-500">{documents.length !== 1 ? t('settings:documents.countPlural', { count: documents.length }) : t('settings:documents.count', { count: documents.length })}</span>
                     </div>
 
                     {isLoadingDocs ? (
@@ -339,7 +332,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                     ) : documents.length === 0 ? (
                         <div className="text-center py-8 text-gray-400">
                             <FileText size={32} className="mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">Noch keine Dokumente hochgeladen</p>
+                            <p className="text-sm">{t('settings:documents.empty')}</p>
                         </div>
                     ) : (
                         <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -352,7 +345,7 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm text-gray-700 truncate">{doc.filename}</p>
                                         <p className="text-xs text-gray-400">
-                                            {formatFileSize(doc.file_size)} • {formatDate(doc.created_at)}
+                                            {formatFileSize(doc.file_size)} • {formatDateTime(doc.created_at)}
                                         </p>
                                     </div>
                                     <button
@@ -370,9 +363,9 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
 
                 {/* File Upload Card */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
-                    <h2 className="text-lg font-semibold text-gray-700">Neue Dokumente hochladen</h2>
+                    <h2 className="text-lg font-semibold text-gray-700">{t('settings:upload.title')}</h2>
                     <p className="text-sm text-gray-500">
-                        Laden Sie Dokumente hoch, um die Wissensdatenbank zu erweitern.
+                        {t('settings:upload.description')}
                     </p>
 
                     {/* Hidden file input */}
@@ -402,9 +395,9 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                     >
                         <Upload size={32} className={isDragging ? 'text-blue-500' : ''} />
                         <span className="text-sm font-medium">
-                            {isDragging ? 'Dateien hier ablegen' : 'Dateien hierher ziehen oder klicken'}
+                            {isDragging ? t('common:dropFiles') : t('common:dragFilesOrClick')}
                         </span>
-                        <span className="text-xs text-gray-400">PDF, Word, Excel, CSV, TXT</span>
+                        <span className="text-xs text-gray-400">{t('common:fileTypes')}</span>
                     </div>
 
                     {/* Pending file list */}
@@ -412,14 +405,14 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-gray-600">
-                                    {files.length} Datei{files.length !== 1 ? 'en' : ''} ausgewaehlt
+                                    {t('common:filesSelected', { count: files.length })}
                                 </span>
                                 {files.some(f => f.status === 'success') && (
                                     <button
                                         onClick={clearCompletedFiles}
                                         className="text-xs text-gray-500 hover:text-gray-700"
                                     >
-                                        Fertige entfernen
+                                        {t('common:removeCompleted')}
                                     </button>
                                 )}
                             </div>
@@ -470,12 +463,12 @@ export function SettingsContainer({ projectId: _projectId }: SettingsContainerPr
                                     {isUploading ? (
                                         <>
                                             <Loader2 size={16} className="animate-spin" />
-                                            Wird hochgeladen...
+                                            {t('common:buttons.uploading')}
                                         </>
                                     ) : (
                                         <>
                                             <Upload size={16} />
-                                            Hochladen
+                                            {t('common:buttons.upload')}
                                         </>
                                     )}
                                 </button>

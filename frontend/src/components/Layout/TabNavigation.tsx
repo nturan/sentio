@@ -1,4 +1,5 @@
 import { MessageSquare, Activity, Users, Settings, UserCircle, Zap, Lightbulb } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../utils/cn';
 import { useProjects } from '../../context/ProjectContext';
 
@@ -9,14 +10,15 @@ interface TabNavigationProps {
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
     const { selectedProject } = useProjects();
+    const { t } = useTranslation('navigation');
 
     const tabs = [
-        { id: 'chat', label: 'Konversation', icon: <MessageSquare size={14} /> },
-        { id: 'dashboard', label: 'Dashboard', icon: <Activity size={14} /> },
-        { id: 'impulse', label: 'Impulse', icon: <Zap size={14} /> },
-        { id: 'recommendations', label: 'Handlungen', icon: <Lightbulb size={14} /> },
-        { id: 'stakeholder', label: 'Stakeholder', icon: <Users size={14} /> },
-        { id: 'settings', label: 'Einstellungen', icon: <Settings size={14} /> },
+        { id: 'chat', label: t('tabs.chat'), icon: <MessageSquare size={14} /> },
+        { id: 'dashboard', label: t('tabs.dashboard'), icon: <Activity size={14} /> },
+        { id: 'impulse', label: t('tabs.impulse'), icon: <Zap size={14} /> },
+        { id: 'recommendations', label: t('tabs.recommendations'), icon: <Lightbulb size={14} /> },
+        { id: 'stakeholder', label: t('tabs.stakeholder'), icon: <Users size={14} /> },
+        { id: 'settings', label: t('tabs.settings'), icon: <Settings size={14} /> },
     ];
 
     return (

@@ -1,0 +1,20 @@
+{
+    "title": "Einstellungen",
+    "projectDetails": "Projektdetails",
+    "projectName": "Projektname",
+    "icon": "Icon",
+    "projectGoal": "Projektziel",
+    "goalPlaceholder": "Beschreiben Sie das Ziel Ihres Projekts...",
+    "projectId": "Projekt-ID:",
+    "documents": {
+        "title": "Hochgeladene Dokumente",
+        "count": "{{count}} Dokument",
+        "countPlural": "{{count}} Dokumente",
+        "empty": "Noch keine Dokumente hochgeladen",
+        "loadFailed": "Dokumente konnten nicht geladen werden"
+    },
+    "upload": {
+        "title": "Neue Dokumente hochladen",
+        "description": "Laden Sie Dokumente hoch, um die Wissensdatenbank zu erweitern."
+    }
+}

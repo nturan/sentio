@@ -1,0 +1,20 @@
+{
+    "title": "Settings",
+    "projectDetails": "Project Details",
+    "projectName": "Project Name",
+    "icon": "Icon",
+    "projectGoal": "Project Goal",
+    "goalPlaceholder": "Describe your project goal...",
+    "projectId": "Project ID:",
+    "documents": {
+        "title": "Uploaded Documents",
+        "count": "{{count}} document",
+        "countPlural": "{{count}} documents",
+        "empty": "No documents uploaded yet",
+        "loadFailed": "Failed to load documents"
+    },
+    "upload": {
+        "title": "Upload New Documents",
+        "description": "Upload documents to expand the knowledge base."
+    }
+}

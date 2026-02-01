@@ -66,46 +66,47 @@ export interface CreateStakeholderAssessmentRequest {
 }
 
 // Mendelow Matrix quadrant display info
+// Note: Use t('enums:mendelowQuadrants.{key}.description') for translated description
 export const MENDELOW_QUADRANTS = {
     'Key Players': {
         color: 'bg-red-100 border-red-300',
         textColor: 'text-red-700',
-        description: 'Eng einbinden und aktiv managen'
     },
     'Keep Satisfied': {
         color: 'bg-yellow-100 border-yellow-300',
         textColor: 'text-yellow-700',
-        description: 'Zufrieden halten, regelmaessig informieren'
     },
     'Keep Informed': {
         color: 'bg-blue-100 border-blue-300',
         textColor: 'text-blue-700',
-        description: 'Gut informiert halten'
     },
     'Monitor': {
         color: 'bg-gray-100 border-gray-300',
         textColor: 'text-gray-700',
-        description: 'Beobachten mit minimalem Aufwand'
     }
 } as const;
 
 // Stakeholder group type display info
+// Note: Use t('enums:stakeholderTypes.{key}.name') and t('enums:stakeholderTypes.{key}.subtitle') for translated text
 export const GROUP_TYPE_INFO = {
     fuehrungskraefte: {
-        name: 'Fuehrungskraefte',
-        subtitle: 'Middle Management',
+        key: 'fuehrungskraefte' as const,
+        name: 'Fuehrungskraefte', // Fallback - use translation in components
+        subtitle: 'Middle Management', // Fallback - use translation in components
         icon: '👔',
         color: 'bg-purple-100 border-purple-300'
     },
     multiplikatoren: {
-        name: 'Multiplikatoren',
-        subtitle: 'Change Manager/Stab',
+        key: 'multiplikatoren' as const,
+        name: 'Multiplikatoren', // Fallback - use translation in components
+        subtitle: 'Change Manager/Stab', // Fallback - use translation in components
         icon: '🎯',
         color: 'bg-green-100 border-green-300'
     },
     mitarbeitende: {
-        name: 'Mitarbeitende',
-        subtitle: 'Die Betroffenen',
+        key: 'mitarbeitende' as const,
+        name: 'Mitarbeitende', // Fallback - use translation in components
+        subtitle: 'Die Betroffenen', // Fallback - use translation in components
         icon: '👥',
         color: 'bg-blue-100 border-blue-300'
     }

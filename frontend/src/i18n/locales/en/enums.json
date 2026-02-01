@@ -1,0 +1,96 @@
+{
+    "stakeholderTypes": {
+        "fuehrungskraefte": {
+            "name": "Leadership",
+            "subtitle": "Middle Management"
+        },
+        "multiplikatoren": {
+            "name": "Multipliers",
+            "subtitle": "Change Managers/Staff"
+        },
+        "mitarbeitende": {
+            "name": "Employees",
+            "subtitle": "Those Affected"
+        }
+    },
+    "mendelowQuadrants": {
+        "Key Players": {
+            "description": "Engage closely and actively manage"
+        },
+        "Keep Satisfied": {
+            "description": "Keep satisfied, inform regularly"
+        },
+        "Keep Informed": {
+            "description": "Keep well informed"
+        },
+        "Monitor": {
+            "description": "Monitor with minimal effort"
+        }
+    },
+    "recommendationTypes": {
+        "habit": {
+            "label": "Habit",
+            "description": "Small daily/weekly routine"
+        },
+        "communication": {
+            "label": "Communication",
+            "description": "Communication improvement"
+        },
+        "workshop": {
+            "label": "Workshop",
+            "description": "Training or workshop session"
+        },
+        "process": {
+            "label": "Process",
+            "description": "Process change"
+        },
+        "campaign": {
+            "label": "Campaign",
+            "description": "Larger initiative"
+        }
+    },
+    "recommendationStatus": {
+        "pending_approval": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "started": "Started",
+        "completed": "Completed"
+    },
+    "priority": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+    },
+    "insightTypes": {
+        "trend": {
+            "label": "Trend",
+            "description": "Development over time"
+        },
+        "opportunity": {
+            "label": "Opportunity",
+            "description": "Improvement potential"
+        },
+        "warning": {
+            "label": "Warning",
+            "description": "Requires attention"
+        },
+        "success": {
+            "label": "Success",
+            "description": "Positive development"
+        },
+        "pattern": {
+            "label": "Pattern",
+            "description": "Recurring theme"
+        }
+    },
+    "insightPriority": {
+        "high": "High Priority",
+        "medium": "Medium Priority",
+        "low": "Low Priority"
+    },
+    "triggerTypes": {
+        "manual": "Manually generated",
+        "impulse_completed": "After Impulse",
+        "recommendation_completed": "After Action"
+    }
+}

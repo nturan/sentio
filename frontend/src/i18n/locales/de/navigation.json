@@ -1,0 +1,14 @@
+{
+    "tabs": {
+        "chat": "Konversation",
+        "dashboard": "Dashboard",
+        "impulse": "Impulse",
+        "recommendations": "Handlungen",
+        "stakeholder": "Stakeholder",
+        "settings": "Einstellungen"
+    },
+    "sidebar": {
+        "projects": "Projekte",
+        "newProject": "Neues Projekt"
+    }
+}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { StakeholderGroup } from '../../types/stakeholder';
 import { GROUP_TYPE_INFO } from '../../types/stakeholder';
 
@@ -7,6 +8,8 @@ interface MendelowMatrixProps {
 }
 
 export function MendelowMatrix({ groups, onSelectGroup }: MendelowMatrixProps) {
+    const { t } = useTranslation('stakeholder');
+
     // Categorize groups into quadrants
     const getQuadrantGroups = (power: 'high' | 'low', interest: 'high' | 'low') => {
         return groups.filter(g => g.power_level === power && g.interest_level === interest);
@@ -40,7 +43,7 @@ export function MendelowMatrix({ groups, onSelectGroup }: MendelowMatrixProps) {
                         );
                     })}
                     {quadrantGroups.length === 0 && (
-                        <div className="text-[10px] text-gray-400 italic">Keine Gruppen</div>
+                        <div className="text-[10px] text-gray-400 italic">{t('mendelow.noGroups')}</div>
                     )}
                 </div>
             </div>
@@ -49,38 +52,38 @@ export function MendelowMatrix({ groups, onSelectGroup }: MendelowMatrixProps) {
 
     return (
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Mendelow Matrix</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">{t('mendelow.title')}</h3>
 
             <div className="relative">
                 {/* Y-axis label */}
                 <div className="absolute -left-1 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] font-medium text-gray-500 whitespace-nowrap">
-                    MACHT
+                    {t('mendelow.power')}
                 </div>
 
                 {/* X-axis label */}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] font-medium text-gray-500">
-                    INTERESSE
+                    {t('mendelow.interest')}
                 </div>
 
                 <div className="ml-4 mb-4">
                     {/* High/Low indicators */}
                     <div className="flex justify-between mb-1 px-2">
-                        <span className="text-[10px] text-gray-400">Niedrig</span>
-                        <span className="text-[10px] text-gray-400">Hoch</span>
+                        <span className="text-[10px] text-gray-400">{t('common:levels.low')}</span>
+                        <span className="text-[10px] text-gray-400">{t('common:levels.high')}</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                         {/* Top row (High Power) */}
                         {renderQuadrant(
-                            'Keep Satisfied',
-                            'Zufrieden halten',
+                            t('mendelow.quadrants.keepSatisfied.title'),
+                            t('mendelow.quadrants.keepSatisfied.strategy'),
                             'high',
                             'low',
                             'bg-yellow-50'
                         )}
                         {renderQuadrant(
-                            'Key Players',
-                            'Eng einbinden',
+                            t('mendelow.quadrants.keyPlayers.title'),
+                            t('mendelow.quadrants.keyPlayers.strategy'),
                             'high',
                             'high',
                             'bg-red-50'
@@ -88,15 +91,15 @@ export function MendelowMatrix({ groups, onSelectGroup }: MendelowMatrixProps) {
 
                         {/* Bottom row (Low Power) */}
                         {renderQuadrant(
-                            'Monitor',
-                            'Beobachten',
+                            t('mendelow.quadrants.monitor.title'),
+                            t('mendelow.quadrants.monitor.strategy'),
                             'low',
                             'low',
                             'bg-gray-50'
                         )}
                         {renderQuadrant(
-                            'Keep Informed',
-                            'Informiert halten',
+                            t('mendelow.quadrants.keepInformed.title'),
+                            t('mendelow.quadrants.keepInformed.strategy'),
                             'low',
                             'high',
                             'bg-blue-50'
@@ -105,8 +108,8 @@ export function MendelowMatrix({ groups, onSelectGroup }: MendelowMatrixProps) {
 
                     {/* Power level indicators */}
                     <div className="flex flex-col justify-between absolute left-0 top-8 bottom-8 text-[10px] text-gray-400">
-                        <span>Hoch</span>
-                        <span>Niedrig</span>
+                        <span>{t('common:levels.high')}</span>
+                        <span>{t('common:levels.low')}</span>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,19 @@
+{
+    "step1": {
+        "title": "Neues Projekt starten",
+        "description": "Geben Sie Ihrem Change-Vorhaben einen Namen und waehlen Sie ein passendes Icon aus.",
+        "namePlaceholder": "z.B. Digitalisierung Vertrieb"
+    },
+    "step2": {
+        "title": "Was ist Ihr Ziel?",
+        "description": "Beschreiben Sie, was Sie mit diesem Projekt erreichen moechten. Je klarer Ihr Ziel, desto besser kann ich Sie unterstuetzen.",
+        "goalPlaceholder": "z.B. Wir moechten die Mitarbeiterzufriedenheit waehrend der Umstrukturierung verstehen und gezielte Massnahmen zur Verbesserung der Akzeptanz entwickeln...",
+        "tip": "Tipp: Beschreiben Sie sowohl das gewuenschte Ergebnis als auch den aktuellen Kontext."
+    },
+    "step3": {
+        "title": "Daten-Input (Optional)",
+        "description": "Haben Sie bereits Dokumente? Laden Sie diese hoch, um erste Insights zu generieren."
+    },
+    "createProject": "Projekt erstellen",
+    "untitledProject": "Unbenanntes Projekt"
+}

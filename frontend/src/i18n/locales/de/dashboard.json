@@ -1,0 +1,23 @@
+{
+    "title": "Dashboard",
+    "loadFailed": "Dashboard-Daten konnten nicht geladen werden",
+    "indicators": {
+        "title": "Bewertungsfaktoren",
+        "emptyState": "Fuegen Sie Stakeholder-Gruppen hinzu und fuehren Sie Bewertungen durch, um Daten zu sehen."
+    },
+    "trend": {
+        "title": "Bewertungsverlauf",
+        "emptyTitle": "Noch keine Verlaufsdaten",
+        "emptyDescription": "Fuehren Sie Stakeholder-Bewertungen durch, um den Verlauf zu verfolgen."
+    },
+    "insights": {
+        "title": "Insights",
+        "generate": "Insight generieren",
+        "emptyTitle": "Noch keine Insights",
+        "emptyDescription": "Klicken Sie auf \"Insight generieren\", um KI-basierte Erkenntnisse zu erhalten.",
+        "loadFailed": "Insights konnten nicht geladen werden",
+        "generateFailed": "Insight konnte nicht generiert werden",
+        "suggestedActions": "Vorgeschlagene Aktionen",
+        "dismiss": "Ausblenden"
+    }
+}

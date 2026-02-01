@@ -1,0 +1,58 @@
+{
+    "buttons": {
+        "save": "Speichern",
+        "saving": "Speichern...",
+        "cancel": "Abbrechen",
+        "close": "Schliessen",
+        "next": "Weiter",
+        "back": "Zurueck",
+        "refresh": "Aktualisieren",
+        "add": "Hinzufuegen",
+        "delete": "Loeschen",
+        "edit": "Bearbeiten",
+        "create": "Erstellen",
+        "creating": "Wird erstellt...",
+        "upload": "Hochladen",
+        "uploading": "Wird hochgeladen...",
+        "browse": "Durchsuchen",
+        "retry": "Erneut versuchen",
+        "reload": "Neu laden"
+    },
+    "labels": {
+        "date": "Datum",
+        "type": "Typ",
+        "status": "Status",
+        "name": "Name",
+        "description": "Beschreibung",
+        "notes": "Notizen",
+        "notesOptional": "Notizen (optional)",
+        "optional": "Optional"
+    },
+    "errors": {
+        "generic": "Etwas ist schiefgelaufen",
+        "loadFailed": "Daten konnten nicht geladen werden",
+        "saveFailed": "Fehler beim Speichern",
+        "uploadFailed": "Upload fehlgeschlagen",
+        "reloadPage": "Bitte laden Sie die Seite neu."
+    },
+    "time": {
+        "justNow": "Gerade eben",
+        "minutesAgo": "vor {{count}} Min.",
+        "hoursAgo": "vor {{count}} Std.",
+        "daysAgo": "vor {{count}} Tagen"
+    },
+    "levels": {
+        "high": "Hoch",
+        "medium": "Mittel",
+        "low": "Niedrig"
+    },
+    "fileTypes": "PDF, Word, Excel, CSV, TXT",
+    "dropFiles": "Dateien hier ablegen",
+    "dragFiles": "Dateien hierher ziehen",
+    "dragFilesOrClick": "Dateien hierher ziehen oder klicken",
+    "filesSelected": "{{count}} Datei(en) ausgewaehlt",
+    "removeCompleted": "Fertige entfernen",
+    "all": "Alle",
+    "noProjectSelected": "Kein Projekt ausgewaehlt",
+    "selectProjectFromSidebar": "Waehlen Sie ein Projekt aus der Seitenleiste"
+}

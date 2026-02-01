@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { X, ChevronRight, FileText, Upload, Trash2, CheckCircle, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../common/Button';
 import { useProjects } from '../../context/ProjectContext';
 import { API_CONFIG, post } from '../../services/api';
@@ -17,6 +18,7 @@ interface OnboardingModalProps {
 
 export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     const { addProject } = useProjects();
+    const { t } = useTranslation(['onboarding', 'common']);
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         name: '',
@@ -76,7 +78,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
 
         try {
             const newProject = await addProject({
-                name: formData.name || 'Unbenanntes Projekt',
+                name: formData.name || t('onboarding:untitledProject'),
                 icon: formData.icon,
                 goal: formData.goal || undefined,
             });
@@ -105,7 +107,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                         ));
                     } catch (error) {
                         setFiles(prev => prev.map((f, idx) =>
-                            idx === i ? { ...f, status: 'error', error: 'Upload fehlgeschlagen' } : f
+                            idx === i ? { ...f, status: 'error', error: t('common:errors.uploadFailed') } : f
                         ));
                     }
                 }
@@ -145,13 +147,13 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                     {/* Step 1: Name & Icon */}
                     {step === 1 && (
                         <div className="space-y-6 flex-1">
-                            <h3 className="text-2xl font-black">Neues Projekt starten</h3>
-                            <p className="text-sm text-gray-500 leading-relaxed">Geben Sie Ihrem Change-Vorhaben einen Namen und wählen Sie ein passendes Icon aus.</p>
+                            <h3 className="text-2xl font-black">{t('onboarding:step1.title')}</h3>
+                            <p className="text-sm text-gray-500 leading-relaxed">{t('onboarding:step1.description')}</p>
                             <div className="space-y-4">
                                 <input
                                     autoFocus
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold"
-                                    placeholder="z.B. Digitalisierung Vertrieb"
+                                    placeholder={t('onboarding:step1.namePlaceholder')}
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />
@@ -174,24 +176,24 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                     {/* Step 2: Goal Definition */}
                     {step === 2 && (
                         <div className="space-y-6 flex-1">
-                            <h3 className="text-2xl font-black">Was ist Ihr Ziel?</h3>
-                            <p className="text-sm text-gray-500">Beschreiben Sie, was Sie mit diesem Projekt erreichen möchten. Je klarer Ihr Ziel, desto besser kann ich Sie unterstützen.</p>
+                            <h3 className="text-2xl font-black">{t('onboarding:step2.title')}</h3>
+                            <p className="text-sm text-gray-500">{t('onboarding:step2.description')}</p>
                             <textarea
                                 autoFocus
                                 className="w-full h-40 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
-                                placeholder="z.B. Wir möchten die Mitarbeiterzufriedenheit während der Umstrukturierung verstehen und gezielte Maßnahmen zur Verbesserung der Akzeptanz entwickeln..."
+                                placeholder={t('onboarding:step2.goalPlaceholder')}
                                 value={formData.goal}
                                 onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
                             />
-                            <p className="text-xs text-gray-400">Tipp: Beschreiben Sie sowohl das gewünschte Ergebnis als auch den aktuellen Kontext.</p>
+                            <p className="text-xs text-gray-400">{t('onboarding:step2.tip')}</p>
                         </div>
                     )}
 
                     {/* Step 3: Upload */}
                     {step === 3 && (
                         <div className="space-y-6 flex-1 flex flex-col">
-                            <h3 className="text-2xl font-black">Daten-Input (Optional)</h3>
-                            <p className="text-sm text-gray-500">Haben Sie bereits Dokumente? Laden Sie diese hoch, um erste Insights zu generieren.</p>
+                            <h3 className="text-2xl font-black">{t('onboarding:step3.title')}</h3>
+                            <p className="text-sm text-gray-500">{t('onboarding:step3.description')}</p>
 
                             {/* Hidden file input */}
                             <input
@@ -220,7 +222,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                             >
                                 <Upload size={36} className={isDragging ? 'text-blue-500' : ''} />
                                 <span className="text-[10px] font-black uppercase tracking-widest">
-                                    {isDragging ? 'Dateien hier ablegen' : 'Dateien hierher ziehen'}
+                                    {isDragging ? t('common:dropFiles') : t('common:dragFiles')}
                                 </span>
                                 <button
                                     className="bg-white text-blue-600 border border-blue-100 px-4 py-2 rounded-lg text-[10px] font-bold shadow-sm hover:bg-blue-50 transition-colors"
@@ -230,9 +232,9 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                                         fileInputRef.current?.click();
                                     }}
                                 >
-                                    Durchsuchen
+                                    {t('common:buttons.browse')}
                                 </button>
-                                <span className="text-[9px] text-gray-400">PDF, Word, Excel, CSV, TXT</span>
+                                <span className="text-[9px] text-gray-400">{t('common:fileTypes')}</span>
                             </div>
 
                             {/* File list */}
@@ -283,7 +285,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                             className={`text-xs font-bold ${step === 1 ? 'text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
                             type="button"
                         >
-                            Zurück
+                            {t('common:buttons.back')}
                         </button>
                         <Button
                             onClick={handleNext}
@@ -293,11 +295,11 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
                             {isUploading ? (
                                 <>
                                     <Loader2 size={16} className="animate-spin" />
-                                    Wird erstellt...
+                                    {t('common:buttons.creating')}
                                 </>
                             ) : (
                                 <>
-                                    {step < 3 ? 'Weiter' : 'Projekt erstellen'} <ChevronRight size={16} />
+                                    {step < 3 ? t('common:buttons.next') : t('onboarding:createProject')} <ChevronRight size={16} />
                                 </>
                             )}
                         </Button>

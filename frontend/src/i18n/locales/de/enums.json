@@ -1,0 +1,96 @@
+{
+    "stakeholderTypes": {
+        "fuehrungskraefte": {
+            "name": "Fuehrungskraefte",
+            "subtitle": "Middle Management"
+        },
+        "multiplikatoren": {
+            "name": "Multiplikatoren",
+            "subtitle": "Change Manager/Stab"
+        },
+        "mitarbeitende": {
+            "name": "Mitarbeitende",
+            "subtitle": "Die Betroffenen"
+        }
+    },
+    "mendelowQuadrants": {
+        "Key Players": {
+            "description": "Eng einbinden und aktiv managen"
+        },
+        "Keep Satisfied": {
+            "description": "Zufrieden halten, regelmaessig informieren"
+        },
+        "Keep Informed": {
+            "description": "Gut informiert halten"
+        },
+        "Monitor": {
+            "description": "Beobachten mit minimalem Aufwand"
+        }
+    },
+    "recommendationTypes": {
+        "habit": {
+            "label": "Gewohnheit",
+            "description": "Kleine taegliche/woechentliche Routine"
+        },
+        "communication": {
+            "label": "Kommunikation",
+            "description": "Kommunikationsverbesserung"
+        },
+        "workshop": {
+            "label": "Workshop",
+            "description": "Training oder Workshop-Session"
+        },
+        "process": {
+            "label": "Prozess",
+            "description": "Prozessaenderung"
+        },
+        "campaign": {
+            "label": "Kampagne",
+            "description": "Groessere Initiative"
+        }
+    },
+    "recommendationStatus": {
+        "pending_approval": "Ausstehend",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt",
+        "started": "Gestartet",
+        "completed": "Abgeschlossen"
+    },
+    "priority": {
+        "high": "Hoch",
+        "medium": "Mittel",
+        "low": "Niedrig"
+    },
+    "insightTypes": {
+        "trend": {
+            "label": "Trend",
+            "description": "Entwicklung ueber Zeit"
+        },
+        "opportunity": {
+            "label": "Chance",
+            "description": "Verbesserungspotential"
+        },
+        "warning": {
+            "label": "Warnung",
+            "description": "Erfordert Aufmerksamkeit"
+        },
+        "success": {
+            "label": "Erfolg",
+            "description": "Positive Entwicklung"
+        },
+        "pattern": {
+            "label": "Muster",
+            "description": "Wiederkehrendes Thema"
+        }
+    },
+    "insightPriority": {
+        "high": "Hohe Prioritaet",
+        "medium": "Mittlere Prioritaet",
+        "low": "Niedrige Prioritaet"
+    },
+    "triggerTypes": {
+        "manual": "Manuell generiert",
+        "impulse_completed": "Nach Impulse",
+        "recommendation_completed": "Nach Handlung"
+    }
+}

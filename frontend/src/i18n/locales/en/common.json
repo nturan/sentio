@@ -1,0 +1,58 @@
+{
+    "buttons": {
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "close": "Close",
+        "next": "Next",
+        "back": "Back",
+        "refresh": "Refresh",
+        "add": "Add",
+        "delete": "Delete",
+        "edit": "Edit",
+        "create": "Create",
+        "creating": "Creating...",
+        "upload": "Upload",
+        "uploading": "Uploading...",
+        "browse": "Browse",
+        "retry": "Try again",
+        "reload": "Reload"
+    },
+    "labels": {
+        "date": "Date",
+        "type": "Type",
+        "status": "Status",
+        "name": "Name",
+        "description": "Description",
+        "notes": "Notes",
+        "notesOptional": "Notes (optional)",
+        "optional": "Optional"
+    },
+    "errors": {
+        "generic": "Something went wrong",
+        "loadFailed": "Failed to load data",
+        "saveFailed": "Failed to save",
+        "uploadFailed": "Upload failed",
+        "reloadPage": "Please reload the page."
+    },
+    "time": {
+        "justNow": "Just now",
+        "minutesAgo": "{{count}} min ago",
+        "hoursAgo": "{{count}} hours ago",
+        "daysAgo": "{{count}} days ago"
+    },
+    "levels": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+    },
+    "fileTypes": "PDF, Word, Excel, CSV, TXT",
+    "dropFiles": "Drop files here",
+    "dragFiles": "Drag files here",
+    "dragFilesOrClick": "Drag files here or click",
+    "filesSelected": "{{count}} file(s) selected",
+    "removeCompleted": "Remove completed",
+    "all": "All",
+    "noProjectSelected": "No project selected",
+    "selectProjectFromSidebar": "Select a project from the sidebar"
+}

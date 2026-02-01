@@ -1,5 +1,5 @@
-
 import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../utils/cn';
 
 interface NewProjectButtonProps {
@@ -7,6 +7,8 @@ interface NewProjectButtonProps {
 }
 
 export function NewProjectButton({ onClick }: NewProjectButtonProps) {
+    const { t } = useTranslation('navigation');
+
     return (
         <div className="w-full border-t border-gray-100 pt-3 px-2 shrink-0">
             <button
@@ -22,7 +24,7 @@ export function NewProjectButton({ onClick }: NewProjectButtonProps) {
                     <Plus size={18} />
                 </span>
                 <span className="text-sm font-medium">
-                    Neues Projekt
+                    {t('sidebar.newProject')}
                 </span>
             </button>
         </div>

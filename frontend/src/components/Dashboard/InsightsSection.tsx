@@ -10,6 +10,7 @@ import {
     ChevronDown,
     X
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
     listInsights,
     generateInsight,
@@ -18,6 +19,7 @@ import {
 import type { Insight, InsightType } from '../../types/insight';
 import { INSIGHT_TYPE_INFO, INSIGHT_PRIORITY_INFO, TRIGGER_TYPE_INFO } from '../../types/insight';
 import { useRefresh, useRefreshSignal } from '../../context/RefreshContext';
+import { formatRelativeTime } from '../../utils/formatting';
 
 interface InsightsSectionProps {
     projectId: string;
@@ -42,21 +44,6 @@ const TypeIcon = ({ type, className = '' }: { type: InsightType; className?: str
     }
 };
 
-// Format date to relative time
-function formatRelativeTime(dateStr: string): string {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Gerade eben';
-    if (diffMins < 60) return `vor ${diffMins} Min.`;
-    if (diffHours < 24) return `vor ${diffHours} Std.`;
-    if (diffDays < 7) return `vor ${diffDays} Tagen`;
-    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
 
 interface InsightCardProps {
     insight: Insight;
@@ -66,6 +53,7 @@ interface InsightCardProps {
 }
 
 function InsightCard({ insight, isExpanded, onToggle, onDismiss }: InsightCardProps) {
+    const { t } = useTranslation('dashboard');
     const typeInfo = INSIGHT_TYPE_INFO[insight.insight_type];
     const priorityInfo = INSIGHT_PRIORITY_INFO[insight.priority];
     const triggerInfo = TRIGGER_TYPE_INFO[insight.trigger_type];
@@ -124,7 +112,7 @@ function InsightCard({ insight, isExpanded, onToggle, onDismiss }: InsightCardPr
                     {insight.action_suggestions.length > 0 && (
                         <div className="mt-4">
                             <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                                Vorgeschlagene Aktionen
+                                {t('insights.suggestedActions')}
                             </h4>
                             <ul className="space-y-1.5">
                                 {insight.action_suggestions.map((action, i) => (
@@ -149,7 +137,7 @@ function InsightCard({ insight, isExpanded, onToggle, onDismiss }: InsightCardPr
                             className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
                         >
                             <X size={14} />
-                            Ausblenden
+                            {t('insights.dismiss')}
                         </button>
                     </div>
                 </div>
@@ -166,6 +154,7 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const { triggerRefresh } = useRefresh();
     const insightsRefreshSignal = useRefreshSignal('insights');
+    const { t } = useTranslation('dashboard');
 
     const loadInsights = async () => {
         try {
@@ -174,7 +163,7 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
             setError(null);
         } catch (err) {
             console.error('Failed to load insights:', err);
-            setError('Insights konnten nicht geladen werden');
+            setError(t('insights.loadFailed'));
         } finally {
             setIsLoading(false);
         }
@@ -210,7 +199,7 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
             triggerRefresh('insights'); // Notify other components
         } catch (err) {
             console.error('Failed to generate insight:', err);
-            setError('Insight konnte nicht generiert werden');
+            setError(t('insights.generateFailed'));
         } finally {
             setIsGenerating(false);
         }
@@ -234,7 +223,7 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <Lightbulb size={20} className="text-purple-500" />
-                    <h2 className="text-lg font-semibold text-gray-700">Insights</h2>
+                    <h2 className="text-lg font-semibold text-gray-700">{t('insights.title')}</h2>
                     {insights.length > 0 && (
                         <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">
                             {insights.length}
@@ -251,7 +240,7 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
                     ) : (
                         <Sparkles size={14} />
                     )}
-                    Insight generieren
+                    {t('insights.generate')}
                 </button>
             </div>
 
@@ -271,9 +260,9 @@ export function InsightsSection({ projectId }: InsightsSectionProps) {
                 /* Empty state */
                 <div className="text-center py-12">
                     <Lightbulb size={48} className="mx-auto mb-3 text-gray-300" />
-                    <p className="text-gray-500 font-medium">Noch keine Insights</p>
+                    <p className="text-gray-500 font-medium">{t('insights.emptyTitle')}</p>
                     <p className="text-sm text-gray-400 mt-1">
-                        Klicken Sie auf "Insight generieren", um KI-basierte Erkenntnisse zu erhalten.
+                        {t('insights.emptyDescription')}
                     </p>
                 </div>
             ) : (

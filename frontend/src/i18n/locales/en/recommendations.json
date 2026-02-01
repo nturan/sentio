@@ -1,0 +1,21 @@
+{
+    "title": "Actions",
+    "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "edit": "Edit",
+        "start": "Start",
+        "markCompleted": "Mark as completed",
+        "measureImpact": "Measure Impact (Start Impulse)",
+        "regenerate": "Generate New Recommendation"
+    },
+    "meta": {
+        "steps": "Steps:",
+        "affects": "Affects:",
+        "created": "Created:",
+        "approved": "Approved:",
+        "started": "Started:",
+        "completed": "Completed:",
+        "reason": "Reason:"
+    }
+}

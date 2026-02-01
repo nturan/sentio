@@ -1,0 +1,51 @@
+{
+    "title": "Stakeholder",
+    "addGroup": "Stakeholder-Gruppe hinzufuegen",
+    "addFirstGroup": "Erste Gruppe hinzufuegen",
+    "groupsTitle": "Stakeholder-Gruppen",
+    "noGroups": {
+        "title": "Noch keine Stakeholder-Gruppen",
+        "description": "Fuegen Sie Ihre erste Stakeholder-Gruppe hinzu, um mit der Bewertung zu beginnen."
+    },
+    "deleteConfirm": "Sind Sie sicher, dass Sie diese Stakeholder-Gruppe loeschen moechten?",
+    "newImpulse": "Neuer Impuls",
+    "impulseChoice": "Wie moechten Sie den Impuls fuer {{groupName}} erfassen?",
+    "manualAssessment": "Manuelle Bewertung",
+    "createSurvey": "Umfrage erstellen",
+    "addModal": {
+        "title": "Stakeholder-Gruppe hinzufuegen",
+        "step1": "1. Gruppentyp waehlen",
+        "step2": "2. Name der Gruppe",
+        "step2Hint": "Optional - falls leer, wird der Gruppentyp als Name verwendet",
+        "step3": "3. Mendelow-Klassifizierung",
+        "step4": "4. Notizen (optional)",
+        "notesPlaceholder": "Zusaetzliche Informationen zur Gruppe...",
+        "power": "Macht",
+        "interest": "Interesse",
+        "quadrant": "Quadrant"
+    },
+    "mendelow": {
+        "title": "Mendelow Matrix",
+        "power": "MACHT",
+        "interest": "INTERESSE",
+        "noGroups": "Keine Gruppen",
+        "quadrants": {
+            "keyPlayers": {
+                "title": "Key Players",
+                "strategy": "Eng einbinden"
+            },
+            "keepSatisfied": {
+                "title": "Keep Satisfied",
+                "strategy": "Zufrieden halten"
+            },
+            "keepInformed": {
+                "title": "Keep Informed",
+                "strategy": "Informiert halten"
+            },
+            "monitor": {
+                "title": "Monitor",
+                "strategy": "Beobachten"
+            }
+        }
+    }
+}

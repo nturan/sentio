@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { StakeholderGroupType, PowerLevel, InterestLevel, CreateStakeholderGroupRequest } from '../../types/stakeholder';
 import { GROUP_TYPE_INFO } from '../../types/stakeholder';
 
@@ -11,6 +12,7 @@ interface AddStakeholderModalProps {
 const ALL_GROUP_TYPES: StakeholderGroupType[] = ['fuehrungskraefte', 'multiplikatoren', 'mitarbeitende'];
 
 export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalProps) {
+    const { t } = useTranslation(['stakeholder', 'common', 'enums']);
     const [selectedType, setSelectedType] = useState<StakeholderGroupType | null>(null);
     const [name, setName] = useState('');
     const [powerLevel, setPowerLevel] = useState<PowerLevel>('high');
@@ -49,7 +51,7 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
             <div className="bg-white w-[500px] max-w-[95vw] max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 shrink-0">
-                    <h2 className="text-lg font-semibold text-gray-800">Stakeholder-Gruppe hinzufuegen</h2>
+                    <h2 className="text-lg font-semibold text-gray-800">{t('stakeholder:addModal.title')}</h2>
                     <button
                         onClick={onClose}
                         className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600"
@@ -62,7 +64,7 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                     {/* Step 1: Select Type */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            1. Gruppentyp waehlen
+                            {t('stakeholder:addModal.step1')}
                         </label>
                         <div className="space-y-2">
                             {ALL_GROUP_TYPES.map(type => {
@@ -94,7 +96,7 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                     {selectedType && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                2. Name der Gruppe
+                                {t('stakeholder:addModal.step2')}
                             </label>
                             <input
                                 type="text"
@@ -104,7 +106,7 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                                 className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                             />
                             <p className="text-xs text-gray-400 mt-1">
-                                Optional - falls leer, wird der Gruppentyp als Name verwendet
+                                {t('stakeholder:addModal.step2Hint')}
                             </p>
                         </div>
                     )}
@@ -113,13 +115,13 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                     {selectedType && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                3. Mendelow-Klassifizierung
+                                {t('stakeholder:addModal.step3')}
                             </label>
 
                             <div className="grid grid-cols-2 gap-4">
                                 {/* Power Level */}
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Macht</label>
+                                    <label className="block text-xs text-gray-500 mb-1">{t('stakeholder:addModal.power')}</label>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => setPowerLevel('high')}
@@ -129,7 +131,7 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                             }`}
                                         >
-                                            Hoch
+                                            {t('common:levels.high')}
                                         </button>
                                         <button
                                             onClick={() => setPowerLevel('low')}
@@ -139,14 +141,14 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                             }`}
                                         >
-                                            Niedrig
+                                            {t('common:levels.low')}
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Interest Level */}
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Interesse</label>
+                                    <label className="block text-xs text-gray-500 mb-1">{t('stakeholder:addModal.interest')}</label>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => setInterestLevel('high')}
@@ -156,7 +158,7 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                             }`}
                                         >
-                                            Hoch
+                                            {t('common:levels.high')}
                                         </button>
                                         <button
                                             onClick={() => setInterestLevel('low')}
@@ -166,7 +168,7 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                             }`}
                                         >
-                                            Niedrig
+                                            {t('common:levels.low')}
                                         </button>
                                     </div>
                                 </div>
@@ -174,11 +176,11 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
 
                             {/* Quadrant Preview */}
                             <div className="mt-3 p-3 bg-gray-50 rounded-lg text-sm">
-                                <span className="font-medium">Quadrant: </span>
-                                {powerLevel === 'high' && interestLevel === 'high' && 'Key Players (Eng einbinden)'}
-                                {powerLevel === 'high' && interestLevel === 'low' && 'Keep Satisfied (Zufrieden halten)'}
-                                {powerLevel === 'low' && interestLevel === 'high' && 'Keep Informed (Informiert halten)'}
-                                {powerLevel === 'low' && interestLevel === 'low' && 'Monitor (Beobachten)'}
+                                <span className="font-medium">{t('stakeholder:addModal.quadrant')} </span>
+                                {powerLevel === 'high' && interestLevel === 'high' && `${t('stakeholder:mendelow.quadrants.keyPlayers.title')} (${t('stakeholder:mendelow.quadrants.keyPlayers.strategy')})`}
+                                {powerLevel === 'high' && interestLevel === 'low' && `${t('stakeholder:mendelow.quadrants.keepSatisfied.title')} (${t('stakeholder:mendelow.quadrants.keepSatisfied.strategy')})`}
+                                {powerLevel === 'low' && interestLevel === 'high' && `${t('stakeholder:mendelow.quadrants.keepInformed.title')} (${t('stakeholder:mendelow.quadrants.keepInformed.strategy')})`}
+                                {powerLevel === 'low' && interestLevel === 'low' && `${t('stakeholder:mendelow.quadrants.monitor.title')} (${t('stakeholder:mendelow.quadrants.monitor.strategy')})`}
                             </div>
                         </div>
                     )}
@@ -187,12 +189,12 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                     {selectedType && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                4. Notizen (optional)
+                                {t('stakeholder:addModal.step4')}
                             </label>
                             <textarea
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Zusaetzliche Informationen zur Gruppe..."
+                                placeholder={t('stakeholder:addModal.notesPlaceholder')}
                                 rows={3}
                                 className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                             />
@@ -206,14 +208,14 @@ export function AddStakeholderModal({ onClose, onSubmit }: AddStakeholderModalPr
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                        Abbrechen
+                        {t('common:buttons.cancel')}
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={!selectedType || isSubmitting}
                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isSubmitting ? 'Wird erstellt...' : 'Hinzufuegen'}
+                        {isSubmitting ? t('common:buttons.creating') : t('common:buttons.add')}
                     </button>
                 </div>
             </div>

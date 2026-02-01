@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Activity, RefreshCw, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
     LineChart,
     Line,
@@ -14,6 +15,7 @@ import { IndicatorCard } from './IndicatorCard';
 import { InsightsSection } from './InsightsSection';
 import { getDashboardData, type DashboardData } from '../../services/api';
 import { useRefreshSignal } from '../../context/RefreshContext';
+import { formatShortDate } from '../../utils/formatting';
 
 interface DashboardContainerProps {
     projectId: string;
@@ -33,6 +35,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const dashboardRefreshSignal = useRefreshSignal('dashboard');
+    const { t } = useTranslation('dashboard');
 
     const loadData = async () => {
         setIsLoading(true);
@@ -42,7 +45,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
             setDashboardData(data);
         } catch (err) {
             console.error('Failed to load dashboard data:', err);
-            setError('Dashboard-Daten konnten nicht geladen werden');
+            setError(t('loadFailed'));
         } finally {
             setIsLoading(false);
         }
@@ -57,10 +60,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
     // Transform trend data for chart - convert to percentages
     const chartData = dashboardData?.trend_data.map(point => {
         const transformed: Record<string, string | number> = {
-            date: new Date(point.date).toLocaleDateString('de-DE', {
-                day: '2-digit',
-                month: '2-digit'
-            })
+            date: formatShortDate(point.date as string)
         };
 
         // Convert each indicator rating to percentage
@@ -80,7 +80,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Activity className="text-blue-600" size={24} />
-                        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+                        <h1 className="text-2xl font-bold text-gray-800">{t('title')}</h1>
                     </div>
                     <button
                         onClick={loadData}
@@ -88,7 +88,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                         className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                         <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                        Aktualisieren
+                        {t('common:buttons.refresh')}
                     </button>
                 </div>
 
@@ -103,14 +103,14 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                             onClick={loadData}
                             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                         >
-                            Erneut versuchen
+                            {t('common:buttons.retry')}
                         </button>
                     </div>
                 ) : (
                     <>
                         {/* Top Panel: 5 Indicator Cards */}
                         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-700 mb-4">Bewertungsfaktoren</h2>
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('indicators.title')}</h2>
                             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                 {dashboardData?.indicators.map((indicator) => (
                                     <IndicatorCard
@@ -126,7 +126,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                             </div>
                             {!hasAnyData && (
                                 <p className="text-sm text-gray-500 mt-4 text-center">
-                                    Fuegen Sie Stakeholder-Gruppen hinzu und fuehren Sie Bewertungen durch, um Daten zu sehen.
+                                    {t('indicators.emptyState')}
                                 </p>
                             )}
                         </div>
@@ -135,7 +135,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                         <div className="bg-white rounded-2xl border border-gray-200 p-6">
                             <div className="flex items-center gap-2 mb-4">
                                 <TrendingUp size={20} className="text-gray-400" />
-                                <h2 className="text-lg font-semibold text-gray-700">Bewertungsverlauf</h2>
+                                <h2 className="text-lg font-semibold text-gray-700">{t('trend.title')}</h2>
                             </div>
 
                             {chartData.length > 0 ? (
@@ -184,9 +184,9 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                                 <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg">
                                     <div className="text-center text-gray-400">
                                         <TrendingUp size={48} className="mx-auto mb-3 opacity-50" />
-                                        <p className="font-medium">Noch keine Verlaufsdaten</p>
+                                        <p className="font-medium">{t('trend.emptyTitle')}</p>
                                         <p className="text-sm mt-1">
-                                            Fuehren Sie Stakeholder-Bewertungen durch, um den Verlauf zu verfolgen.
+                                            {t('trend.emptyDescription')}
                                         </p>
                                     </div>
                                 </div>

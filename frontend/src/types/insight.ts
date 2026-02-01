@@ -38,62 +38,65 @@ export interface GenerateInsightResponse {
     insight: GeneratedInsight;
 }
 
+// Note: Use t('enums:insightTypes.{key}.label') and t('enums:insightTypes.{key}.description') for translated text
 export const INSIGHT_TYPE_INFO: Record<InsightType, { label: string; icon: string; color: string; description: string }> = {
     trend: {
-        label: 'Trend',
+        label: 'Trend', // Fallback - use translation
         icon: 'TrendingUp',
         color: 'blue',
-        description: 'Entwicklung ueber Zeit'
+        description: 'Entwicklung ueber Zeit' // Fallback - use translation
     },
     opportunity: {
-        label: 'Chance',
+        label: 'Chance', // Fallback - use translation
         icon: 'Sparkles',
         color: 'green',
-        description: 'Verbesserungspotential'
+        description: 'Verbesserungspotential' // Fallback - use translation
     },
     warning: {
-        label: 'Warnung',
+        label: 'Warnung', // Fallback - use translation
         icon: 'AlertTriangle',
         color: 'amber',
-        description: 'Erfordert Aufmerksamkeit'
+        description: 'Erfordert Aufmerksamkeit' // Fallback - use translation
     },
     success: {
-        label: 'Erfolg',
+        label: 'Erfolg', // Fallback - use translation
         icon: 'CheckCircle',
         color: 'emerald',
-        description: 'Positive Entwicklung'
+        description: 'Positive Entwicklung' // Fallback - use translation
     },
     pattern: {
-        label: 'Muster',
+        label: 'Muster', // Fallback - use translation
         icon: 'Network',
         color: 'purple',
-        description: 'Wiederkehrendes Thema'
+        description: 'Wiederkehrendes Thema' // Fallback - use translation
     },
 } as const;
 
+// Note: Use t('enums:insightPriority.{key}') for translated label
 export const INSIGHT_PRIORITY_INFO: Record<InsightPriority, { label: string; color: string; bgColor: string; borderColor: string }> = {
     high: {
-        label: 'Hohe Prioritaet',
+        label: 'Hohe Prioritaet', // Fallback - use translation
         color: 'text-red-700',
         bgColor: 'bg-red-50',
         borderColor: 'border-red-200'
     },
     medium: {
-        label: 'Mittlere Prioritaet',
+        label: 'Mittlere Prioritaet', // Fallback - use translation
         color: 'text-amber-700',
         bgColor: 'bg-amber-50',
         borderColor: 'border-amber-200'
     },
     low: {
-        label: 'Niedrige Prioritaet',
+        label: 'Niedrige Prioritaet', // Fallback - use translation
         color: 'text-gray-700',
         bgColor: 'bg-gray-50',
         borderColor: 'border-gray-200'
     },
 } as const;
 
+// Note: Use t('enums:triggerTypes.{key}') for translated label
 export const TRIGGER_TYPE_INFO: Record<TriggerType, { label: string }> = {
-    manual: { label: 'Manuell generiert' },
-    impulse_completed: { label: 'Nach Impulse' },
-    recommendation_completed: { label: 'Nach Handlung' },
+    manual: { label: 'Manuell generiert' }, // Fallback - use translation
+    impulse_completed: { label: 'Nach Impulse' }, // Fallback - use translation
+    recommendation_completed: { label: 'Nach Handlung' }, // Fallback - use translation
 } as const;

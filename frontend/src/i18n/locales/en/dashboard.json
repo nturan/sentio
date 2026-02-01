@@ -1,0 +1,23 @@
+{
+    "title": "Dashboard",
+    "loadFailed": "Failed to load dashboard data",
+    "indicators": {
+        "title": "Rating Factors",
+        "emptyState": "Add stakeholder groups and perform assessments to see data."
+    },
+    "trend": {
+        "title": "Rating Trend",
+        "emptyTitle": "No trend data yet",
+        "emptyDescription": "Perform stakeholder assessments to track the trend."
+    },
+    "insights": {
+        "title": "Insights",
+        "generate": "Generate Insight",
+        "emptyTitle": "No insights yet",
+        "emptyDescription": "Click \"Generate Insight\" to get AI-based findings.",
+        "loadFailed": "Failed to load insights",
+        "generateFailed": "Failed to generate insight",
+        "suggestedActions": "Suggested Actions",
+        "dismiss": "Dismiss"
+    }
+}

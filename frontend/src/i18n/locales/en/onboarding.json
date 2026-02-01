@@ -1,0 +1,19 @@
+{
+    "step1": {
+        "title": "Start New Project",
+        "description": "Give your change initiative a name and select an appropriate icon.",
+        "namePlaceholder": "e.g. Sales Digitalization"
+    },
+    "step2": {
+        "title": "What is your goal?",
+        "description": "Describe what you want to achieve with this project. The clearer your goal, the better I can support you.",
+        "goalPlaceholder": "e.g. We want to understand employee satisfaction during the restructuring and develop targeted measures to improve acceptance...",
+        "tip": "Tip: Describe both the desired outcome and the current context."
+    },
+    "step3": {
+        "title": "Data Input (Optional)",
+        "description": "Do you already have documents? Upload them to generate initial insights."
+    },
+    "createProject": "Create Project",
+    "untitledProject": "Untitled Project"
+}

@@ -1,0 +1,51 @@
+{
+    "title": "Stakeholders",
+    "addGroup": "Add Stakeholder Group",
+    "addFirstGroup": "Add First Group",
+    "groupsTitle": "Stakeholder Groups",
+    "noGroups": {
+        "title": "No stakeholder groups yet",
+        "description": "Add your first stakeholder group to start assessing."
+    },
+    "deleteConfirm": "Are you sure you want to delete this stakeholder group?",
+    "newImpulse": "New Impulse",
+    "impulseChoice": "How would you like to record the impulse for {{groupName}}?",
+    "manualAssessment": "Manual Assessment",
+    "createSurvey": "Create Survey",
+    "addModal": {
+        "title": "Add Stakeholder Group",
+        "step1": "1. Select Group Type",
+        "step2": "2. Group Name",
+        "step2Hint": "Optional - if empty, the group type will be used as the name",
+        "step3": "3. Mendelow Classification",
+        "step4": "4. Notes (optional)",
+        "notesPlaceholder": "Additional information about the group...",
+        "power": "Power",
+        "interest": "Interest",
+        "quadrant": "Quadrant"
+    },
+    "mendelow": {
+        "title": "Mendelow Matrix",
+        "power": "POWER",
+        "interest": "INTEREST",
+        "noGroups": "No groups",
+        "quadrants": {
+            "keyPlayers": {
+                "title": "Key Players",
+                "strategy": "Engage closely"
+            },
+            "keepSatisfied": {
+                "title": "Keep Satisfied",
+                "strategy": "Keep satisfied"
+            },
+            "keepInformed": {
+                "title": "Keep Informed",
+                "strategy": "Keep informed"
+            },
+            "monitor": {
+                "title": "Monitor",
+                "strategy": "Monitor"
+            }
+        }
+    }
+}
