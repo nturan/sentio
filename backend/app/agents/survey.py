@@ -1,11 +1,15 @@
 """
 Survey Generator Agent - generates surveys for Mitarbeitende and Multiplikatoren groups.
+
+Uses MCP tools for data access instead of direct database queries.
 """
 
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import json
+
+from .mcp_client import MCPClientManager
 
 
 class SurveyQuestion(BaseModel):
@@ -68,6 +72,44 @@ class SurveyAgent:
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
 
+    async def generate_survey_for_group(self, group_id: str) -> Survey:
+        """
+        Generate a survey for a stakeholder group.
+
+        Uses MCP tools to gather all necessary context.
+
+        Args:
+            group_id: The stakeholder group ID
+
+        Returns:
+            Survey: Generated survey object
+        """
+        # Get context via MCP tool
+        context_result = await MCPClientManager.invoke_tool("survey_get_context", group_id=group_id)
+        context = json.loads(context_result)
+
+        if "error" in context:
+            raise ValueError(context["error"])
+
+        # Build impulse history from context
+        impulse_history = []
+        for impulse in context.get("impulse_history", []):
+            impulse_history.append({
+                "date": impulse.get("date"),
+                "average_rating": impulse.get("average_rating"),
+                "ratings": impulse.get("ratings", {})
+            })
+
+        return await self._generate_with_context(
+            project_goal=context.get("project_goal"),
+            project_name=context.get("project_name"),
+            group_name=context.get("group_name"),
+            group_type=context.get("group_type"),
+            mendelow_quadrant=context.get("mendelow_quadrant"),
+            mendelow_strategy=context.get("mendelow_strategy"),
+            impulse_history=impulse_history
+        )
+
     async def generate_survey(
         self,
         project_goal: str,
@@ -79,7 +121,10 @@ class SurveyAgent:
         impulse_history: List[dict]
     ) -> Survey:
         """
-        Generate a survey based on the stakeholder group context.
+        Generate a survey with pre-fetched context.
+
+        This method is provided for backward compatibility with routers
+        that already have the context data.
 
         Args:
             project_goal: The project's goal/description
@@ -92,6 +137,29 @@ class SurveyAgent:
 
         Returns:
             Survey: Generated survey object
+        """
+        return await self._generate_with_context(
+            project_goal=project_goal,
+            project_name=project_name,
+            group_name=group_name,
+            group_type=group_type,
+            mendelow_quadrant=mendelow_quadrant,
+            mendelow_strategy=mendelow_strategy,
+            impulse_history=impulse_history
+        )
+
+    async def _generate_with_context(
+        self,
+        project_goal: str,
+        project_name: Optional[str],
+        group_name: str,
+        group_type: str,
+        mendelow_quadrant: str,
+        mendelow_strategy: str,
+        impulse_history: List[dict]
+    ) -> Survey:
+        """
+        Internal method to generate survey with provided context.
         """
         # Build context from impulse history
         history_context = ""
@@ -158,43 +226,17 @@ Wichtig: Ersetze [Projektname] in deinen Fragen durch "{project_display_name}"."
         response = await self.llm.ainvoke(messages)
 
         # Parse the response
-        try:
-            # Extract JSON from the response
-            content = response.content
-            # Try to find JSON in the response
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0]
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0]
+        content = response.content
+        # Try to find JSON in the response
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0]
+        elif "```" in content:
+            content = content.split("```")[1].split("```")[0]
 
+        try:
             survey_data = json.loads(content)
             return Survey(**survey_data)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse survey response as JSON: {e}. Raw content: {content[:500]}")
         except Exception as e:
-            # Return a default survey if parsing fails
-            print(f"Failed to parse survey response: {e}")
-            print(f"Raw response: {response.content}")
-            return Survey(
-                project_title=project_display_name,
-                title=f"Puls-Check: {project_display_name}",
-                description=f"Dein Feedback hilft uns, {project_display_name} noch besser zu gestalten.",
-                questions=[
-                    SurveyQuestion(
-                        id="q1",
-                        type="scale",
-                        question=f"Weisst du aktuell genau, wie dein Beitrag zum Erfolg von {project_display_name} aussieht?",
-                        includeJustification=True
-                    ),
-                    SurveyQuestion(
-                        id="q2",
-                        type="scale",
-                        question="Wie leicht faellt es dir, Bedenken oder Ideen offen anzusprechen?",
-                        includeJustification=True
-                    ),
-                    SurveyQuestion(
-                        id="q3",
-                        type="freetext",
-                        question="Was wuerdest du dir fuer die naechsten Wochen wuenschen?"
-                    )
-                ],
-                estimated_duration="~3 Minuten"
-            )
+            raise ValueError(f"Failed to create survey from response: {e}. Raw content: {content[:500]}")

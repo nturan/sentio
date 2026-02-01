@@ -1,13 +1,14 @@
+"""
+Chat Agent - uses MCP tools for data access and ReAct pattern for responses.
+"""
+
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import HumanMessage, AIMessage
 from .knowledge import KnowledgeAgent
-from ..database import get_connection, dict_from_row
-from ..constants import CORE_INDICATORS, get_indicator_by_key
-import uuid
-from datetime import datetime
+from .mcp_client import MCPClientManager
+from ..constants import CORE_INDICATORS
 import json
 
 
@@ -32,8 +33,15 @@ class ChatAgent:
     def __init__(self, knowledge_agent: KnowledgeAgent):
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
         self.knowledge_agent = knowledge_agent
+        self._tools = None
+        self._agent = None
 
-        # Define Tools
+    async def _get_tools(self):
+        """Get tools for the chat agent, including MCP tools."""
+        if self._tools is not None:
+            return self._tools
+
+        # Create the knowledge retrieval tool
         @tool
         async def retrieve_knowledge(query: str, project_id: str) -> str:
             """
@@ -42,21 +50,25 @@ class ChatAgent:
             result = await self.knowledge_agent.retrieve_context(query, project_id)
             return result.get("context", "No information found.")
 
-        self.tools = [retrieve_knowledge]
+        # Get MCP tools for data retrieval
+        mcp_tools = await MCPClientManager.get_tools_by_names([
+            "project_get",
+            "stakeholder_group_list",
+            "impulse_history_get",
+            "recommendation_list",
+            "document_retrieve_context"
+        ])
+        self._tools = [retrieve_knowledge] + mcp_tools
 
-    def _get_project_context(self, project_id: str) -> dict:
-        """Get project data for context."""
-        with get_connection() as conn:
-            cursor = conn.cursor()
+        return self._tools
 
-            # Get project goal
-            cursor.execute("SELECT goal FROM projects WHERE id = ?", (project_id,))
-            project_row = cursor.fetchone()
-            goal = project_row["goal"] if project_row else None
-
-        return {
-            "goal": goal
-        }
+    async def _get_project_context(self, project_id: str) -> dict:
+        """Get project data for context using MCP tool."""
+        result = await MCPClientManager.invoke_tool("project_get", project_id=project_id)
+        project = json.loads(result)
+        if "error" in project:
+            raise ValueError(f"Project not found: {project_id}")
+        return {"goal": project.get("goal")}
 
     def _build_system_prompt(self, context: dict) -> str:
         """Build system prompt with project context."""
@@ -73,17 +85,31 @@ class ChatAgent:
         )
 
     async def chat(self, message: str, project_id: str, history: list):
+        """
+        Chat with the agent using streaming.
+
+        Args:
+            message: The user's message
+            project_id: The project ID for context
+            history: List of previous messages [{role: 'user'|'assistant', content: '...'}]
+
+        Yields:
+            String chunks of the response
+        """
         # Get project context
-        context = self._get_project_context(project_id)
+        context = await self._get_project_context(project_id)
 
         # Build system prompt
         system_prompt = self._build_system_prompt(context)
 
         # Add tool usage instructions
-        system_prompt += "\n\nUse the `retrieve_knowledge` tool when you need to check for facts or documents in the knowledge base."
+        system_prompt += "\n\nUse the available tools when you need to check for facts, documents, or data about the project."
+
+        # Get tools
+        tools = await self._get_tools()
 
         # Create agent with updated prompt
-        agent_executor = create_react_agent(self.llm, self.tools, prompt=system_prompt)
+        agent_executor = create_react_agent(self.llm, tools, prompt=system_prompt)
 
         # Convert simple history to LangChain messages
         chat_history = []

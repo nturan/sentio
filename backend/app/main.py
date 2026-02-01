@@ -12,6 +12,7 @@ from .agents.knowledge import KnowledgeAgent
 from .agents.orchestrator import OrchestratorAgent
 from .agents.chat import ChatAgent
 from .agents.dashboard import DashboardAgent
+from .agents.mcp_client import MCPClientManager
 from .database import init_database
 from .routers import sessions, projects, documents, workflow, stakeholders, surveys, recommendations, seed
 
@@ -22,8 +23,23 @@ load_dotenv()
 async def lifespan(app: FastAPI):
     # Startup: Initialize database
     init_database()
+
+    # Initialize MCP client connection
+    try:
+        await MCPClientManager.get_tools()
+        print("MCP client initialized successfully")
+    except Exception as e:
+        print(f"Warning: Failed to initialize MCP client: {e}")
+        print("Agents will initialize MCP connection on first use")
+
     yield
-    # Shutdown: cleanup if needed
+
+    # Shutdown: Disconnect MCP client
+    try:
+        await MCPClientManager.disconnect()
+        print("MCP client disconnected")
+    except Exception as e:
+        print(f"Warning: Error disconnecting MCP client: {e}")
 
 
 app = FastAPI(title="Sentio Backend", lifespan=lifespan)

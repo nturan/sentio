@@ -391,19 +391,17 @@ async def delete_recommendation(recommendation_id: str):
 @router.post("/projects/{project_id}/recommendations/generate", response_model=GeneratedRecommendationResponse)
 async def generate_recommendation(project_id: str, request: GenerateRecommendationRequest):
     """Generate a recommendation using AI based on project context."""
+    # Verify project exists
     with get_connection() as conn:
         cursor = conn.cursor()
-
-        # Get project context
-        context = get_project_context(cursor, project_id)
+        cursor.execute("SELECT id FROM projects WHERE id = ?", (project_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Project not found")
 
     try:
-        # Generate recommendation
+        # Generate recommendation using MCP tools for context
         generated = await recommendation_agent.generate_recommendation(
-            project_goal=context["project_goal"],
-            project_description=context["project_description"],
-            stakeholder_groups=context["stakeholder_groups"],
-            impulse_summaries=context["impulse_summaries"],
+            project_id=project_id,
             focus=request.focus
         )
 
@@ -442,16 +440,10 @@ async def regenerate_recommendation(recommendation_id: str, request: RegenerateR
         if request.additional_context:
             rejection_context = f"{rejection_context}\n\nZusaetzlicher Kontext: {request.additional_context}"
 
-        # Get project context
-        context = get_project_context(cursor, project_id)
-
     try:
-        # Generate alternative recommendation
+        # Generate alternative recommendation using MCP tools for context
         generated = await recommendation_agent.generate_recommendation(
-            project_goal=context["project_goal"],
-            project_description=context["project_description"],
-            stakeholder_groups=context["stakeholder_groups"],
-            impulse_summaries=context["impulse_summaries"],
+            project_id=project_id,
             rejection_context=rejection_context
         )
 
