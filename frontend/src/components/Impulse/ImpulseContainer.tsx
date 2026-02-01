@@ -1,6 +1,6 @@
 import { useEffect, useState, Fragment } from 'react';
 import { createPortal } from 'react-dom';
-import { Zap, Plus, RefreshCw, X, ClipboardCheck, FileText } from 'lucide-react';
+import { Zap, Plus, RefreshCw, X, ClipboardCheck, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useStakeholder } from '../../context/StakeholderContext';
 import { ManualAssessmentModal } from './ManualAssessmentModal';
 import { SurveyGeneratorModal } from './SurveyGeneratorModal';
@@ -8,6 +8,19 @@ import type { ImpulseHistory } from '../../types/impulse';
 import type { StakeholderGroup, StakeholderGroupWithAssessments, CreateStakeholderAssessmentRequest } from '../../types/stakeholder';
 import { getImpulseHistory, getStakeholderGroup, batchAddAssessmentsWithDate } from '../../services/api';
 import { GROUP_TYPE_INFO } from '../../types/stakeholder';
+
+// Indicator name mapping
+const INDICATOR_NAMES: Record<string, string> = {
+    'orientierung_sinn': 'Orientierung & Sinn',
+    'psychologische_sicherheit': 'Psychologische Sicherheit',
+    'empowerment': 'Empowerment',
+    'partizipation': 'Partizipation',
+    'wertschaetzung': 'Wertschaetzung',
+    'ressourcenfreigabe': 'Ressourcenfreigabe',
+    'aktive_kommunikation': 'Aktive Kommunikation',
+    'widerstandsmanagement': 'Widerstandsmanagement',
+    'vorbildfunktion': 'Vorbildfunktion',
+};
 
 interface ImpulseContainerProps {
     projectId: string;
@@ -20,6 +33,8 @@ interface HistoricalAssessment {
     groupType: string;
     date: string;
     averageRating: number;
+    ratings: Record<string, number>;
+    notes: Record<string, string>;
     source: 'manual' | 'survey';
 }
 
@@ -30,6 +45,7 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
     const [selectedGroupForSurvey, setSelectedGroupForSurvey] = useState<StakeholderGroupWithAssessments | null>(null);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [showGroupSelector, setShowGroupSelector] = useState(false);
+    const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
     useEffect(() => {
         loadGroups(projectId);
@@ -110,6 +126,8 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                     groupType: group.group_type,
                     date: impulse.date,
                     averageRating: impulse.average_rating,
+                    ratings: impulse.ratings,
+                    notes: impulse.notes,
                     source: impulse.source
                 });
             }
@@ -188,6 +206,7 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                                         <table className="w-full">
                                             <thead className="bg-gray-50 border-b border-gray-200">
                                                 <tr>
+                                                    <th className="w-8 px-2"></th>
                                                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Datum</th>
                                                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gruppe</th>
                                                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Typ</th>
@@ -198,43 +217,116 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                                             <tbody className="divide-y divide-gray-100">
                                                 {allHistoricalAssessments.map((assessment, idx) => {
                                                     const typeInfo = GROUP_TYPE_INFO[assessment.groupType as keyof typeof GROUP_TYPE_INFO];
+                                                    const rowId = `${assessment.groupId}-${assessment.date}-${idx}`;
+                                                    const isExpanded = expandedRowId === rowId;
+                                                    const indicatorEntries = Object.entries(assessment.ratings);
                                                     return (
-                                                        <tr key={`${assessment.groupId}-${assessment.date}-${idx}`} className="hover:bg-gray-50">
-                                                            <td className="px-4 py-3 text-sm text-gray-900">
-                                                                {formatDate(assessment.date)}
-                                                            </td>
-                                                            <td className="px-4 py-3 text-sm text-gray-900">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span>{typeInfo?.icon || '👤'}</span>
-                                                                    <span>{assessment.groupName}</span>
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-4 py-3 text-sm text-gray-500">
-                                                                {typeInfo?.name || assessment.groupType}
-                                                            </td>
-                                                            <td className="px-4 py-3 text-sm text-right">
-                                                                <span className={`font-semibold ${
-                                                                    assessment.averageRating >= 7 ? 'text-green-600' :
-                                                                    assessment.averageRating >= 5 ? 'text-yellow-600' :
-                                                                    'text-red-600'
-                                                                }`}>
-                                                                    {assessment.averageRating.toFixed(1)}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-4 py-3 text-sm">
-                                                                {assessment.source === 'survey' ? (
-                                                                    <span className="inline-flex items-center gap-1 text-purple-600">
-                                                                        <FileText size={14} />
-                                                                        Umfrage
+                                                        <Fragment key={rowId}>
+                                                            <tr
+                                                                className="hover:bg-gray-50 cursor-pointer transition-colors"
+                                                                onClick={() => setExpandedRowId(isExpanded ? null : rowId)}
+                                                            >
+                                                                <td className="px-2 py-3 text-gray-400">
+                                                                    {isExpanded ? (
+                                                                        <ChevronUp size={16} />
+                                                                    ) : (
+                                                                        <ChevronDown size={16} />
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-gray-900">
+                                                                    {formatDate(assessment.date)}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-gray-900">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span>{typeInfo?.icon || '👤'}</span>
+                                                                        <span>{assessment.groupName}</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-gray-500">
+                                                                    {typeInfo?.name || assessment.groupType}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-right">
+                                                                    <span className={`font-semibold ${
+                                                                        assessment.averageRating >= 7 ? 'text-green-600' :
+                                                                        assessment.averageRating >= 5 ? 'text-yellow-600' :
+                                                                        'text-red-600'
+                                                                    }`}>
+                                                                        {assessment.averageRating.toFixed(1)}
                                                                     </span>
-                                                                ) : (
-                                                                    <span className="inline-flex items-center gap-1 text-blue-600">
-                                                                        <ClipboardCheck size={14} />
-                                                                        Manuell
-                                                                    </span>
-                                                                )}
-                                                            </td>
-                                                        </tr>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm">
+                                                                    {assessment.source === 'survey' ? (
+                                                                        <span className="inline-flex items-center gap-1 text-purple-600">
+                                                                            <FileText size={14} />
+                                                                            Umfrage
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="inline-flex items-center gap-1 text-blue-600">
+                                                                            <ClipboardCheck size={14} />
+                                                                            Manuell
+                                                                        </span>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                            {/* Expanded Details Row */}
+                                                            {isExpanded && (
+                                                                <tr className="bg-gray-50">
+                                                                    <td colSpan={6} className="px-4 py-4">
+                                                                        <div className="pl-6">
+                                                                            <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                                                                Bewertungen im Detail
+                                                                            </h4>
+                                                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                                                {indicatorEntries.map(([key, rating]) => {
+                                                                                    const indicatorName = INDICATOR_NAMES[key] || key;
+                                                                                    const note = assessment.notes[key];
+                                                                                    return (
+                                                                                        <div
+                                                                                            key={key}
+                                                                                            className="bg-white rounded-lg border border-gray-200 p-3"
+                                                                                        >
+                                                                                            <div className="flex items-center justify-between mb-1">
+                                                                                                <span className="text-sm font-medium text-gray-700 truncate">
+                                                                                                    {indicatorName}
+                                                                                                </span>
+                                                                                                <span className={`text-lg font-bold ${
+                                                                                                    rating >= 7 ? 'text-green-600' :
+                                                                                                    rating >= 5 ? 'text-yellow-600' :
+                                                                                                    'text-red-600'
+                                                                                                }`}>
+                                                                                                    {rating.toFixed(1)}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            {/* Rating bar */}
+                                                                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                                                                <div
+                                                                                                    className={`h-2 rounded-full ${
+                                                                                                        rating >= 7 ? 'bg-green-500' :
+                                                                                                        rating >= 5 ? 'bg-yellow-500' :
+                                                                                                        'bg-red-500'
+                                                                                                    }`}
+                                                                                                    style={{ width: `${rating * 10}%` }}
+                                                                                                />
+                                                                                            </div>
+                                                                                            {note && (
+                                                                                                <p className="text-xs text-gray-500 mt-2 italic">
+                                                                                                    {note}
+                                                                                                </p>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    );
+                                                                                })}
+                                                                            </div>
+                                                                            {indicatorEntries.length === 0 && (
+                                                                                <p className="text-sm text-gray-500 italic">
+                                                                                    Keine Einzelbewertungen verfuegbar
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </Fragment>
                                                     );
                                                 })}
                                             </tbody>
