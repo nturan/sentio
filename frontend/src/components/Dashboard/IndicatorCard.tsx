@@ -10,10 +10,10 @@ interface IndicatorCardProps {
 }
 
 export function IndicatorCard({ name, description, averageRating, latestRating, previousRating, ratingCount }: IndicatorCardProps) {
-    const hasData = ratingCount > 0 && averageRating !== null;
+    const hasData = ratingCount > 0 && latestRating !== null;
 
-    // Convert rating (1-10) to percentage (10-100%)
-    const displayPercent = hasData ? Math.round(averageRating * 10) : null;
+    // Convert latest rating (1-10) to percentage (10-100%)
+    const displayPercent = hasData ? Math.round(latestRating * 10) : null;
 
     // Calculate change between latest and previous rating
     const hasChange = latestRating !== null && previousRating !== null;

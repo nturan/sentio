@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Node modules
+node_modules
+frontend/node_modules
+
+# Build artifacts (we rebuild in Docker)
+frontend/dist
+dist
+.vite
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+*.egg-info
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Environment files (added via Heroku config vars)
+.env
+.env.local
+.env.*.local
+
+# Data files (use Heroku addons for persistence)
+*.db
+*.sqlite
+chroma_db
+
+# Misc
+.DS_Store
+*.log
+.nx

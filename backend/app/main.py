@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional
+from pathlib import Path
 from dotenv import load_dotenv
 import os
 import json
@@ -176,3 +178,21 @@ app.include_router(surveys.router)
 app.include_router(recommendations.router)
 app.include_router(seed.router)
 app.include_router(insights.router)
+
+# Serve static frontend files in production
+STATIC_DIR = Path(os.getenv("STATIC_FILES_DIR", "./static"))
+if STATIC_DIR.exists() and STATIC_DIR.is_dir():
+    # Mount static assets (js, css, images)
+    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+
+    # Serve index.html for all non-API routes (SPA fallback)
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        # Don't serve index.html for API routes
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Not found")
+
+        index_path = STATIC_DIR / "index.html"
+        if index_path.exists():
+            return FileResponse(index_path)
+        raise HTTPException(status_code=404, detail="Frontend not found")
