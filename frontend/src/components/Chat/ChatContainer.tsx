@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useChat } from '../../hooks/useChat';
 import { useChatSessions } from '../../context/ChatSessionContext';
 import { MessageBubble } from './MessageBubble';
@@ -10,6 +11,7 @@ interface ChatContainerProps {
 }
 
 export function ChatContainer({ projectId }: ChatContainerProps) {
+    const { t } = useTranslation('chat');
     const { currentSession, isLoading: isSessionLoading, error: sessionError, updateSessionTitle } = useChatSessions();
     const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -28,13 +30,13 @@ export function ChatContainer({ projectId }: ChatContainerProps) {
             <div className="flex-1 flex flex-col overflow-hidden">
                 {isSessionLoading && !currentSession ? (
                     <div className="flex-1 flex items-center justify-center">
-                        <div className="text-gray-400 text-sm">Lade Chat...</div>
+                        <div className="text-gray-400 text-sm">{t('loading')}</div>
                     </div>
                 ) : sessionError ? (
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center text-gray-500">
-                            <p className="text-sm">Chat konnte nicht geladen werden.</p>
-                            <p className="text-xs mt-1">Bitte stellen Sie sicher, dass der Server laeuft.</p>
+                            <p className="text-sm">{t('loadError')}</p>
+                            <p className="text-xs mt-1">{t('loadErrorHint')}</p>
                         </div>
                     </div>
                 ) : (

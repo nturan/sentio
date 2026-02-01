@@ -1,4 +1,5 @@
 
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../utils/cn';
 import type { Message } from '../../types/chat';
 
@@ -7,22 +8,23 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
+    const { t } = useTranslation('chat');
     const isUser = message.role === 'user';
+    const label = isUser ? t('userLabel') : t('aiAssistant');
 
     return (
         <div className={cn("flex gap-4 animate-in fade-in slide-in-from-bottom-2", isUser ? 'flex-row-reverse' : '')}>
-            {/* Avatar */}
-            <div className={cn(
-                "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-[10px] shrink-0 shadow-sm",
-                isUser ? 'bg-blue-600 text-white' : 'bg-indigo-600 text-white'
-            )}>
-                {isUser ? 'DU' : 'AI'}
-            </div>
+            {/* Avatar - only for assistant */}
+            {!isUser && (
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-[10px] shrink-0 shadow-sm uppercase bg-indigo-600 text-white">
+                    AI
+                </div>
+            )}
 
             {/* Content */}
             <div className={cn("max-w-[80%]", isUser ? 'text-right' : '')}>
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 px-1">
-                    {message.user}
+                    {label}
                 </p>
 
                 <div className={cn(

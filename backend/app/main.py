@@ -186,7 +186,8 @@ app.include_router(insights.router)
 STATIC_DIR = Path(os.getenv("STATIC_FILES_DIR", "./static"))
 if STATIC_DIR.exists() and STATIC_DIR.is_dir():
     # Mount static assets (js, css, images)
-    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+    if (STATIC_DIR / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
 
     # Serve index.html for all non-API routes (SPA fallback)
     @app.get("/{full_path:path}")
@@ -195,6 +196,12 @@ if STATIC_DIR.exists() and STATIC_DIR.is_dir():
         if full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="Not found")
 
+        # Try to serve static file first (e.g., sentio.svg, favicon.ico)
+        static_file_path = STATIC_DIR / full_path
+        if static_file_path.exists() and static_file_path.is_file():
+            return FileResponse(static_file_path)
+
+        # Otherwise serve index.html for SPA routing
         index_path = STATIC_DIR / "index.html"
         if index_path.exists():
             return FileResponse(index_path)

@@ -5,6 +5,9 @@
     "errorMessage": "Error connecting to the AI service. Please check your connection.",
     "userLabel": "You",
     "aiAssistant": "AI Assistant",
+    "loading": "Loading chat...",
+    "loadError": "Chat could not be loaded.",
+    "loadErrorHint": "Please make sure the server is running.",
     "generator": {
         "title": "AI Assistant",
         "subtitle": "Ask questions or request changes",

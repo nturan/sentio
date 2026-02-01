@@ -104,3 +104,40 @@ python -m app.seed --scenario six_month
 # 10 months of data
 python -m app.seed --scenario ten_month
 ```
+
+## Scope Cuts
+
+Due to the 2-day hackathon timeframe, the following features were intentionally out of scope:
+
+### Authentication & Authorization
+- No user authentication system
+- No role-based access control
+- No multi-tenant support
+
+### Enterprise Integrations
+- No connectors for employee directories (Active Directory, LDAP)
+- No SharePoint/OneDrive integration for company documents
+- No HRIS system integrations
+- No SSO/SAML support
+
+### Survey Distribution
+- Currently exports surveys as Markdown files only
+- No built-in survey hosting or response collection
+
+### Document Processing
+- Knowledge base supports text files only
+- No PDF, Word, or PowerPoint parsing
+
+## Future Roadmap
+
+### Survey Channels (Planned)
+- **Web Survey Page**: Hosted survey links with anonymous responses
+- **AI Phone Calls**: Automated voice surveys for broader reach
+- **Email Campaigns**: Survey distribution via email with tracking
+- **Chatbot Integration**: Embed surveys in existing chat platforms (Slack, Teams)
+
+### Enterprise Features (Planned)
+- User authentication with SSO
+- Integration with HR systems for automatic stakeholder imports
+- SharePoint connector for document ingestion
+- Advanced analytics and reporting dashboards
