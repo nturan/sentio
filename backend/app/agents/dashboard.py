@@ -3,6 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
 from typing import List
+from ..prompts import load_prompt
 
 class Insight(BaseModel):
     summary: str = Field(description="Brief summary of the feedback/text")
@@ -14,16 +15,15 @@ class DashboardAgent:
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0.5)
         self.parser = JsonOutputParser(pydantic_object=Insight)
-        
+
+        # Load system prompt from localized prompts
+        system_prompt_template = load_prompt("dashboard", "system")
+
         self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a Data Analyst for a Change Management Project.
-            Analyze the input for Sentiment (0-100) and Risks.
-            
-            {format_instructions}
-            """),
+            ("system", system_prompt_template),
             ("human", "{text}")
         ])
-        
+
         self.chain = self.prompt | self.llm | self.parser
 
     async def analyze(self, text: str):

@@ -8,6 +8,17 @@
     },
     "allImpulses": "Alle Impulse",
     "noImpulses": "Noch keine Impulse erfasst",
+    "groupCard": {
+        "ratingFactors": "Bewertungsfaktoren",
+        "current": "Aktuell",
+        "lastImpulses": "Letzte Impulse:",
+        "noAssessments": "Noch keine Bewertungen vorhanden",
+        "average": "Durchschnitt",
+        "fromSurvey": "(aus Umfrage)",
+        "ratingCount": "{{count}} Bewertungen",
+        "manualAssessment": "Manuelle Bewertung",
+        "createSurvey": "Umfrage erstellen"
+    },
     "table": {
         "date": "Datum",
         "group": "Gruppe",
@@ -45,5 +56,30 @@
         "aktive_kommunikation": "Aktive Kommunikation",
         "widerstandsmanagement": "Widerstandsmanagement",
         "vorbildfunktion": "Vorbildfunktion"
+    },
+    "surveyGenerator": {
+        "title": "Umfrage erstellen - {{groupName}}",
+        "contextTitle": "Kontext fuer den Agenten:",
+        "contextGroup": "Gruppe:",
+        "contextPosition": "Position:",
+        "contextImpulses": "Letzte {{count}} Impulse: Durchschnitt {{avg}}",
+        "contextWeakness": "Schwachstelle: {{indicator}} (Durchschnitt {{avg}})",
+        "generating": "Generiere Umfrage...",
+        "generateButton": "Umfrage generieren",
+        "saved": "Umfrage gespeichert!",
+        "savedAt": "Gespeichert unter:",
+        "titleLabel": "Titel",
+        "descriptionLabel": "Beschreibung",
+        "questionsLabel": "Fragen",
+        "addQuestion": "Frage hinzufuegen",
+        "chatPlaceholder": "Fragen zur Umfrage oder Aenderungswuensche...",
+        "saveAsMarkdown": "Als Markdown speichern",
+        "questionLabel": "Frage {{number}}",
+        "questionTypeScale": "Skala (1-10)",
+        "questionTypeFreetext": "Freitext",
+        "questionPlaceholder": "Fragetext eingeben...",
+        "justificationOptional": "Begruendung optional",
+        "generateError": "Fehler beim Generieren der Umfrage.",
+        "saveError": "Fehler beim Speichern der Umfrage."
     }
 }

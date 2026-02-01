@@ -3,7 +3,10 @@
     "loadFailed": "Dashboard-Daten konnten nicht geladen werden",
     "indicators": {
         "title": "Bewertungsfaktoren",
-        "emptyState": "Fuegen Sie Stakeholder-Gruppen hinzu und fuehren Sie Bewertungen durch, um Daten zu sehen."
+        "emptyState": "Fuegen Sie Stakeholder-Gruppen hinzu und fuehren Sie Bewertungen durch, um Daten zu sehen.",
+        "ratingCount": "{{count}} Bewertung",
+        "ratingCount_plural": "{{count}} Bewertungen",
+        "noData": "Keine Daten"
     },
     "trend": {
         "title": "Bewertungsverlauf",

@@ -7,6 +7,7 @@ from typing import Any, Dict
 
 from ..scenario_base import ScenarioGenerator
 from ...factories import SessionFactory
+from ...prompts import load_constants
 
 
 class NewProjectScenario(ScenarioGenerator):
@@ -20,7 +21,7 @@ class NewProjectScenario(ScenarioGenerator):
     """
 
     SCENARIO_NAME = "new"
-    SCENARIO_DESCRIPTION = "Frisches Projekt ohne Historie (3 Tage alt)"
+    SCENARIO_DESCRIPTION = "Fresh project without history (3 days old)"
     PROJECT_AGE_DAYS = 3
     NUM_IMPULSES = 0
     NUM_RECOMMENDATIONS = 0
@@ -29,6 +30,10 @@ class NewProjectScenario(ScenarioGenerator):
     @classmethod
     def generate(cls, conn: sqlite3.Connection) -> Dict[str, Any]:
         """Generate a new project scenario."""
+        # Load localized scenario data
+        scenarios = load_constants("scenarios")
+        scenario_data = scenarios["new"]
+
         result = {
             "scenario": cls.SCENARIO_NAME,
             "project": None,
@@ -38,11 +43,11 @@ class NewProjectScenario(ScenarioGenerator):
             "sessions": [],
         }
 
-        # Create the project
+        # Create the project with localized name and goal
         project = cls.create_project(
             conn,
-            name="Neues Change-Projekt",
-            goal="Ziel noch zu definieren",
+            name=scenario_data["project_name"],
+            goal=scenario_data["project_goal"],
             days_ago=cls.PROJECT_AGE_DAYS,
         )
         result["project"] = project
@@ -55,11 +60,11 @@ class NewProjectScenario(ScenarioGenerator):
         )
         result["stakeholder_groups"] = groups
 
-        # Create one empty session
+        # Create one empty session with localized title
         session = SessionFactory.create(
             conn,
             project_id=project["id"],
-            title="Neuer Chat",
+            title=scenario_data["session_title"],
             created_at=project["created_at"],
         )
         result["sessions"] = [session]

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { X, Loader2 } from 'lucide-react';
 import type { Recommendation } from '../../types/recommendation';
 import { updateRecommendation } from '../../services/api';
@@ -11,13 +12,15 @@ interface RejectModalProps {
 }
 
 export function RejectModal({ recommendation, onClose, onRejected }: RejectModalProps) {
+    const { t } = useTranslation('recommendations');
+    const { t: tCommon } = useTranslation('common');
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async () => {
         if (!reason.trim()) {
-            setError('Bitte geben Sie einen Grund fuer die Ablehnung ein');
+            setError(t('rejectModal.reasonRequired'));
             return;
         }
 
@@ -32,7 +35,7 @@ export function RejectModal({ recommendation, onClose, onRejected }: RejectModal
             onClose();
         } catch (err) {
             console.error('Failed to reject recommendation:', err);
-            setError(err instanceof Error ? err.message : 'Fehler beim Ablehnen');
+            setError(err instanceof Error ? err.message : tCommon('errors.generic'));
         } finally {
             setIsSubmitting(false);
         }
@@ -72,7 +75,7 @@ export function RejectModal({ recommendation, onClose, onRejected }: RejectModal
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-800">
-                        Empfehlung ablehnen
+                        {t('rejectModal.title')}
                     </h2>
                     <button
                         onClick={onClose}
@@ -86,18 +89,18 @@ export function RejectModal({ recommendation, onClose, onRejected }: RejectModal
                 {/* Content */}
                 <div className="p-6 space-y-4">
                     <p className="text-sm text-gray-600">
-                        <span className="font-medium">Empfehlung:</span> "{recommendation.title}"
+                        <span className="font-medium">{t('rejectModal.recommendation')}</span> "{recommendation.title}"
                     </p>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Grund fuer Ablehnung:
+                            {t('rejectModal.reasonLabel')}
                         </label>
                         <textarea
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             rows={4}
-                            placeholder="z.B. Budget nicht verfuegbar, zeitlich nicht umsetzbar..."
+                            placeholder={t('rejectModal.reasonPlaceholder')}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
                             disabled={isSubmitting}
                         />
@@ -117,7 +120,7 @@ export function RejectModal({ recommendation, onClose, onRejected }: RejectModal
                         disabled={isSubmitting}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
                     >
-                        Abbrechen
+                        {tCommon('buttons.cancel')}
                     </button>
                     <button
                         onClick={handleSubmit}
@@ -127,10 +130,10 @@ export function RejectModal({ recommendation, onClose, onRejected }: RejectModal
                         {isSubmitting ? (
                             <>
                                 <Loader2 size={16} className="animate-spin" />
-                                Ablehnen...
+                                {t('rejectModal.rejecting')}
                             </>
                         ) : (
-                            'Ablehnen'
+                            t('actions.reject')
                         )}
                     </button>
                 </div>

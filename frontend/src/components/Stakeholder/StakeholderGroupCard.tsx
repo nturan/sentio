@@ -1,5 +1,6 @@
 import { MoreVertical, Trash2, Edit2, Zap } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { StakeholderGroup } from '../../types/stakeholder';
 import { GROUP_TYPE_INFO, MENDELOW_QUADRANTS } from '../../types/stakeholder';
 
@@ -11,9 +12,13 @@ interface StakeholderGroupCardProps {
 }
 
 export function StakeholderGroupCard({ group, onSelect, onDelete, onStartImpulse }: StakeholderGroupCardProps) {
+    const { t } = useTranslation('stakeholder');
+    const { t: tEnums } = useTranslation('enums');
     const [showMenu, setShowMenu] = useState(false);
 
     const typeInfo = GROUP_TYPE_INFO[group.group_type];
+    const typeName = tEnums(`stakeholderTypes.${group.group_type}.name`);
+    const typeSubtitle = tEnums(`stakeholderTypes.${group.group_type}.subtitle`);
     const quadrantInfo = MENDELOW_QUADRANTS[group.mendelow_quadrant as keyof typeof MENDELOW_QUADRANTS] ||
         MENDELOW_QUADRANTS['Monitor'];
 
@@ -24,10 +29,10 @@ export function StakeholderGroupCard({ group, onSelect, onDelete, onStartImpulse
                     <span className="text-2xl">{typeInfo.icon}</span>
                     <div>
                         <h3 className="font-semibold text-gray-800">
-                            {group.name || typeInfo.name}
+                            {group.name || typeName}
                         </h3>
                         <p className="text-xs text-gray-500">
-                            {group.name ? `${typeInfo.name} - ${typeInfo.subtitle}` : typeInfo.subtitle}
+                            {group.name ? `${typeName} - ${typeSubtitle}` : typeSubtitle}
                         </p>
                     </div>
                 </div>
@@ -55,7 +60,7 @@ export function StakeholderGroupCard({ group, onSelect, onDelete, onStartImpulse
                                     className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                                 >
                                     <Edit2 size={14} />
-                                    Details anzeigen
+                                    {t('card.showDetails')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -65,7 +70,7 @@ export function StakeholderGroupCard({ group, onSelect, onDelete, onStartImpulse
                                     className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                                 >
                                     <Trash2 size={14} />
-                                    Loeschen
+                                    {t('card.delete')}
                                 </button>
                             </div>
                         </>
@@ -92,7 +97,7 @@ export function StakeholderGroupCard({ group, onSelect, onDelete, onStartImpulse
                     className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium"
                 >
                     <Zap size={16} />
-                    Neuer Impuls
+                    {t('newImpulse')}
                 </button>
             )}
         </div>

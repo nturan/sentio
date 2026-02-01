@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { X, Loader2, Plus, Trash2 } from 'lucide-react';
 import type { Recommendation, RecommendationType, RecommendationPriority, UpdateRecommendationRequest } from '../../types/recommendation';
 import { RECOMMENDATION_TYPE_INFO, PRIORITY_INFO } from '../../types/recommendation';
@@ -15,6 +16,9 @@ interface EditModalProps {
 }
 
 export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved }: EditModalProps) {
+    const { t } = useTranslation('recommendations');
+    const { t: tCommon } = useTranslation('common');
+    const { t: tEnums } = useTranslation('enums');
     const [title, setTitle] = useState(recommendation.title);
     const [description, setDescription] = useState(recommendation.description || '');
     const [type, setType] = useState<RecommendationType>(recommendation.recommendation_type);
@@ -26,7 +30,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
 
     const handleSave = async () => {
         if (!title.trim()) {
-            setError('Bitte geben Sie einen Titel ein');
+            setError(t('editModal.titleRequired'));
             return;
         }
 
@@ -46,7 +50,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
             onClose();
         } catch (err) {
             console.error('Failed to update recommendation:', err);
-            setError(err instanceof Error ? err.message : 'Fehler beim Speichern');
+            setError(err instanceof Error ? err.message : tCommon('errors.saveFailed'));
         } finally {
             setIsSaving(false);
         }
@@ -119,7 +123,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
                     <h2 className="text-lg font-semibold text-gray-800">
-                        Empfehlung bearbeiten
+                        {t('editModal.title')}
                     </h2>
                     <button
                         onClick={onClose}
@@ -134,7 +138,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     {/* Title */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Titel:</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('editModal.titleLabel')}</label>
                         <input
                             type="text"
                             value={title}
@@ -146,7 +150,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Beschreibung:</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('editModal.descriptionLabel')}</label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
@@ -159,7 +163,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                     {/* Type & Priority */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Typ:</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('editModal.typeLabel')}</label>
                             <select
                                 value={type}
                                 onChange={(e) => setType(e.target.value as RecommendationType)}
@@ -174,7 +178,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Prioritaet:</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('editModal.priorityLabel')}</label>
                             <select
                                 value={priority}
                                 onChange={(e) => setPriority(e.target.value as RecommendationPriority)}
@@ -190,7 +194,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
 
                     {/* Affected Groups */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Betroffene Gruppen:</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('editModal.affectedGroupsLabel')}</label>
                         <div className="flex flex-wrap gap-2">
                             <label className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded cursor-pointer hover:bg-gray-200">
                                 <input
@@ -199,7 +203,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                                     onChange={handleToggleAll}
                                     disabled={isSaving}
                                 />
-                                <span className="text-sm">Alle</span>
+                                <span className="text-sm">{tCommon('all')}</span>
                             </label>
                             {stakeholderGroups.map(group => (
                                 <label
@@ -213,7 +217,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                                         disabled={isSaving || affectedGroups.includes('all')}
                                     />
                                     <span className="text-sm">
-                                        {GROUP_TYPE_INFO[group.group_type]?.icon} {group.name || GROUP_TYPE_INFO[group.group_type]?.name}
+                                        {GROUP_TYPE_INFO[group.group_type]?.icon} {group.name || tEnums(`stakeholderTypes.${group.group_type}.name`)}
                                     </span>
                                 </label>
                             ))}
@@ -222,7 +226,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
 
                     {/* Steps */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Konkrete Schritte:</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('editModal.stepsLabel')}</label>
                         <div className="space-y-2">
                             {steps.map((step, index) => (
                                 <div key={index} className="flex items-center gap-2">
@@ -232,7 +236,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                                         value={step}
                                         onChange={(e) => handleUpdateStep(index, e.target.value)}
                                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Schritt beschreiben..."
+                                        placeholder={t('editModal.stepPlaceholder')}
                                         disabled={isSaving}
                                     />
                                     <button
@@ -250,7 +254,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                                 disabled={isSaving}
                             >
                                 <Plus size={14} />
-                                Schritt hinzufuegen
+                                {t('editModal.addStep')}
                             </button>
                         </div>
                     </div>
@@ -269,7 +273,7 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                         disabled={isSaving}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
                     >
-                        Abbrechen
+                        {tCommon('buttons.cancel')}
                     </button>
                     <button
                         onClick={handleSave}
@@ -279,10 +283,10 @@ export function EditModal({ recommendation, stakeholderGroups, onClose, onSaved 
                         {isSaving ? (
                             <>
                                 <Loader2 size={16} className="animate-spin" />
-                                Speichern...
+                                {tCommon('buttons.saving')}
                             </>
                         ) : (
-                            'Speichern'
+                            tCommon('buttons.save')
                         )}
                     </button>
                 </div>

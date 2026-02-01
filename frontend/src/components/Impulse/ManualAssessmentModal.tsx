@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import type { StakeholderGroupWithAssessments, IndicatorDefinition, CreateStakeholderAssessmentRequest } from '../../types/stakeholder';
 
@@ -14,6 +15,8 @@ interface AssessmentValue {
 }
 
 export function ManualAssessmentModal({ group, onClose, onSave }: ManualAssessmentModalProps) {
+    const { t } = useTranslation('impulse');
+    const { t: tCommon } = useTranslation('common');
     const today = new Date().toISOString().split('T')[0];
     const [assessedAt, setAssessedAt] = useState(today);
     const [values, setValues] = useState<Record<string, AssessmentValue>>(() => {
@@ -58,7 +61,7 @@ export function ManualAssessmentModal({ group, onClose, onSave }: ManualAssessme
         }
 
         if (assessments.length === 0) {
-            alert('Bitte bewerten Sie mindestens einen Faktor.');
+            alert(t('modal.rateAtLeastOne'));
             return;
         }
 
@@ -68,7 +71,7 @@ export function ManualAssessmentModal({ group, onClose, onSave }: ManualAssessme
             onClose();
         } catch (error) {
             console.error('Failed to save assessments:', error);
-            alert('Fehler beim Speichern der Bewertungen.');
+            alert(t('modal.saveFailed'));
         } finally {
             setIsSaving(false);
         }
@@ -84,10 +87,10 @@ export function ManualAssessmentModal({ group, onClose, onSave }: ManualAssessme
                 <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between shrink-0">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-800">
-                            Neue Bewertung - {group.name || group.group_type}
+                            {t('modal.title')} - {group.name || group.group_type}
                         </h2>
                         <p className="text-sm text-gray-500">
-                            {completedCount} von {totalCount} Faktoren bewertet
+                            {t('modal.factorsRated', { completed: completedCount, total: totalCount })}
                         </p>
                     </div>
                     <button
@@ -101,7 +104,7 @@ export function ManualAssessmentModal({ group, onClose, onSave }: ManualAssessme
                 {/* Date Picker */}
                 <div className="px-6 py-4 border-b border-gray-100 shrink-0">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Datum
+                        {t('modal.dateLabel')}
                     </label>
                     <input
                         type="date"
@@ -111,7 +114,7 @@ export function ManualAssessmentModal({ group, onClose, onSave }: ManualAssessme
                         className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                        Standard: Heute. Sie koennen auch vergangene Daten eintragen.
+                        {t('modal.dateHint')}
                     </p>
                 </div>
 
@@ -136,14 +139,14 @@ export function ManualAssessmentModal({ group, onClose, onSave }: ManualAssessme
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                        Abbrechen
+                        {tCommon('buttons.cancel')}
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={isSaving || completedCount === 0}
                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isSaving ? 'Speichern...' : 'Speichern'}
+                        {isSaving ? tCommon('buttons.saving') : tCommon('buttons.save')}
                     </button>
                 </div>
             </div>
@@ -159,6 +162,7 @@ interface IndicatorRatingProps {
 }
 
 function IndicatorRating({ indicator, value, onChange, onNotesChange }: IndicatorRatingProps) {
+    const { t: tCommon } = useTranslation('common');
     return (
         <div className="border-b border-gray-100 pb-5 last:border-b-0">
             <h4 className="font-medium text-gray-800 mb-1">{indicator.name}</h4>
@@ -189,7 +193,7 @@ function IndicatorRating({ indicator, value, onChange, onNotesChange }: Indicato
             {/* Notes */}
             <input
                 type="text"
-                placeholder="Notizen (optional)"
+                placeholder={tCommon('labels.notesOptional')}
                 value={value.notes}
                 onChange={(e) => onNotesChange(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

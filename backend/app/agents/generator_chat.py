@@ -11,104 +11,9 @@ from langgraph.prebuilt import create_react_agent
 from .mcp_client import MCPClientManager
 from .knowledge import KnowledgeAgent
 from langchain_core.tools import tool
+from ..prompts import load_prompt
 import json
 from typing import Optional
-
-
-GENERATOR_CHAT_SYSTEM_PROMPT = """Du bist ein AI-Assistent, der bei der Erstellung von {generator_type_german} hilft.
-
-=== PROJEKT-KONTEXT ===
-Projekt-ID: {project_id}
-
-Du hast Zugriff auf Projektdaten ueber Tools. WICHTIG: Verwende IMMER die obige Projekt-ID wenn du Tools aufrufst!
-
-Tool-Verwendung:
-- stakeholder_group_list(project_id="{project_id}"): Alle Stakeholder-Gruppen des Projekts
-- recommendation_list(project_id="{project_id}"): Bestehende Empfehlungen
-- insight_list(project_id="{project_id}"): Alle Insights des Projekts
-- impulse_history_get(group_id="<group_id>"): Feedback fuer eine spezifische Gruppe (erst stakeholder_group_list aufrufen, um group_id zu erhalten)
-- document_retrieve_context(project_id="{project_id}"): Projektdokumente durchsuchen
-- retrieve_knowledge(query="<suchbegriff>"): Wissen aus der Dokumenten-Wissensbasis
-
-=== AKTUELLER CANVAS-INHALT ===
-{canvas_json}
-
-=== REGELN ===
-
-1. FRAGEN BEANTWORTEN:
-   - Beantworte Fragen zum Projekt basierend auf den verfuegbaren Daten
-   - Nutze die Tools, um aktuelle Informationen abzurufen
-   - Antworte immer auf Deutsch, es sei denn der Benutzer schreibt auf Englisch
-
-2. CANVAS AENDERUNGEN:
-   - Wenn der Benutzer Aenderungen am Canvas wuenscht, fuehre sie aus
-   - Erklaere kurz, was du geaendert hast
-   - Fuege am Ende deiner Antwort einen Canvas-Update-Block hinzu:
-
-   <<CANVAS_UPDATE>>
-   {{"feldname": "neuer_wert", ...}}
-
-3. FELDNAMEN FUER EMPFEHLUNGEN:
-   - title: Titel der Empfehlung
-   - description: Beschreibung
-   - recommendation_type: "habit", "communication", "workshop", "process", oder "campaign"
-   - priority: "high", "medium", oder "low"
-   - affected_groups: Array von Gruppen-IDs oder ["all"]
-   - steps: Array von Schritten (Strings)
-
-4. FELDNAMEN FUER UMFRAGEN:
-   - title: Titel der Umfrage
-   - description: Beschreibung der Umfrage
-   - questions: Array von Frage-Objekten mit:
-     - id: Eindeutige ID (z.B. "q-123")
-     - type: "scale" (Skala 1-10) oder "freetext" (Freitext)
-     - question: Der Fragetext
-     - includeJustification: true/false (nur bei scale, ob Begruendung optional)
-   - estimated_duration: Geschaetzte Dauer (z.B. "~3 Minuten")
-
-5. WICHTIG:
-   - Aendere NUR die Felder, die der Benutzer explizit erwaehnt
-   - Der Canvas-Update-Block muss valides JSON sein
-   - Wenn keine Aenderung gewuenscht ist, fuege KEINEN Canvas-Update-Block hinzu
-
-=== BEISPIELE ===
-
-Benutzer: "Setze die Prioritaet auf hoch"
-Antwort: "Ich habe die Prioritaet auf hoch gesetzt.
-
-<<CANVAS_UPDATE>>
-{{"priority": "high"}}"
-
-Benutzer: "Fuege einen Schritt hinzu: Team informieren"
-Antwort: "Ich habe den Schritt 'Team informieren' hinzugefuegt.
-
-<<CANVAS_UPDATE>>
-{{"steps": ["Schritt 1", "Schritt 2", "Team informieren"]}}"
-
-Benutzer: "Was sind die aktuellen Stakeholder-Gruppen?"
-Antwort: [Rufe stakeholder_group_list mit project_id auf und beschreibe die Gruppen - KEIN Canvas-Update]
-
-Benutzer: "Wie viele Impulse gab es?"
-Antwort: [Erst stakeholder_group_list aufrufen um die group_ids zu erhalten, dann impulse_history_get fuer jede Gruppe - KEIN Canvas-Update]
-
-Benutzer: "Fuege eine Frage ueber Zusammenarbeit hinzu"
-Antwort: "Ich habe eine neue Frage zur Zusammenarbeit hinzugefuegt.
-
-<<CANVAS_UPDATE>>
-{{"questions": [... bestehende Fragen ..., {{"id": "q-neu", "type": "scale", "question": "Wie bewerten Sie die Zusammenarbeit im Team?", "includeJustification": true}}]}}"
-
-Benutzer: "Aendere die zweite Frage zu Freitext"
-Antwort: "Ich habe die zweite Frage auf Freitext umgestellt.
-
-<<CANVAS_UPDATE>>
-{{"questions": [... alle Fragen mit geaendertem type fuer Frage 2 ...]}}"
-"""
-
-GENERATOR_TYPE_GERMAN = {
-    "recommendation": "Handlungsempfehlungen",
-    "insight": "Insights",
-    "survey": "Umfragen"
-}
 
 
 class GeneratorChatAgent:
@@ -146,13 +51,17 @@ class GeneratorChatAgent:
 
     def _build_system_prompt(self, generator_type: str, canvas_data: dict, project_id: str) -> str:
         """Build system prompt with canvas context and project ID."""
-        generator_type_german = GENERATOR_TYPE_GERMAN.get(generator_type, generator_type)
+        # Load generator types from localized prompts
+        prompt_data = load_prompt("generator_chat", "generator_types")
+        generator_type_label = prompt_data.get(generator_type, generator_type)
 
         # Format canvas data as readable JSON
         canvas_json = json.dumps(canvas_data, indent=2, ensure_ascii=False)
 
-        return GENERATOR_CHAT_SYSTEM_PROMPT.format(
-            generator_type_german=generator_type_german,
+        # Load system prompt template
+        prompt_template = load_prompt("generator_chat", "system")
+        return prompt_template.format(
+            generator_type_label=generator_type_label,
             canvas_json=canvas_json,
             project_id=project_id
         )
@@ -181,8 +90,9 @@ class GeneratorChatAgent:
         # Build system prompt with canvas context and project ID
         system_prompt = self._build_system_prompt(generator_type, canvas_data, project_id)
 
-        # Add tool usage instructions
-        system_prompt += f"\n\nVerwende die verfuegbaren Tools, wenn du Fakten, Dokumente oder Daten zum Projekt nachschlagen musst. Denke daran: Die Projekt-ID ist '{project_id}'."
+        # Add tool usage instructions from localized prompt
+        tool_usage = load_prompt("generator_chat", "tool_usage")
+        system_prompt += f"\n\n{tool_usage.format(project_id=project_id)}"
 
         # Get tools
         tools = await self._get_tools(project_id)

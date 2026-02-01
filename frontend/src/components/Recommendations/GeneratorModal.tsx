@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { X, Loader2, Plus, Trash2 } from 'lucide-react';
 import type { GeneratedRecommendation, RecommendationType, RecommendationPriority, CreateRecommendationRequest } from '../../types/recommendation';
 import { RECOMMENDATION_TYPE_INFO, PRIORITY_INFO } from '../../types/recommendation';
@@ -30,6 +31,9 @@ export function GeneratorModal({
     onClose,
     onSaved
 }: GeneratorModalProps) {
+    const { t } = useTranslation('recommendations');
+    const { t: tCommon } = useTranslation('common');
+    const { t: tEnums } = useTranslation('enums');
     const [focus, setFocus] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -99,7 +103,7 @@ export function GeneratorModal({
             setGenerated(response.recommendation);
         } catch (err) {
             console.error('Failed to generate recommendation:', err);
-            setError(err instanceof Error ? err.message : 'Fehler bei der Generierung');
+            setError(err instanceof Error ? err.message : t('generatorModal.generationError'));
         } finally {
             setIsGenerating(false);
         }
@@ -107,7 +111,7 @@ export function GeneratorModal({
 
     const handleSave = async () => {
         if (!editedTitle.trim()) {
-            setError('Bitte geben Sie einen Titel ein');
+            setError(t('generatorModal.titleRequired'));
             return;
         }
 
@@ -127,7 +131,7 @@ export function GeneratorModal({
             onClose();
         } catch (err) {
             console.error('Failed to save recommendation:', err);
-            setError(err instanceof Error ? err.message : 'Fehler beim Speichern');
+            setError(err instanceof Error ? err.message : tCommon('errors.saveFailed'));
         } finally {
             setIsSaving(false);
         }
@@ -205,7 +209,7 @@ export function GeneratorModal({
                 {/* Header */}
                 <div style={{ flexShrink: 0 }} className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-800">
-                        {rejectedRecommendationId ? 'Alternative Empfehlung generieren' : 'Neue Handlungsempfehlung generieren'}
+                        {rejectedRecommendationId ? t('generatorModal.titleRegenerate') : t('generatorModal.title')}
                     </h2>
                     <button
                         onClick={onClose}
@@ -227,14 +231,14 @@ export function GeneratorModal({
                     }} className="space-y-6">
                         {/* Context Display */}
                         <div className="bg-gray-50 rounded-lg p-4">
-                            <h3 className="text-sm font-medium text-gray-700 mb-2">Kontext fuer KI:</h3>
+                            <h3 className="text-sm font-medium text-gray-700 mb-2">{t('generatorModal.contextTitle')}</h3>
                             <div className="text-sm text-gray-600 space-y-1">
-                                <p><span className="font-medium">Projektziel:</span> {projectGoal || 'Nicht definiert'}</p>
+                                <p><span className="font-medium">{t('generatorModal.projectGoal')}</span> {projectGoal || t('generatorModal.projectGoalNotDefined')}</p>
                                 {stakeholderGroups.length > 0 && (
-                                    <p><span className="font-medium">Stakeholder-Gruppen:</span> {stakeholderGroups.map(g => g.name || GROUP_TYPE_INFO[g.group_type]?.name).join(', ')}</p>
+                                    <p><span className="font-medium">{t('generatorModal.stakeholderGroups')}</span> {stakeholderGroups.map(g => g.name || tEnums(`stakeholderTypes.${g.group_type}.name`)).join(', ')}</p>
                                 )}
                                 {rejectionReason && (
-                                    <p className="text-red-600"><span className="font-medium">Ablehnungsgrund:</span> {rejectionReason}</p>
+                                    <p className="text-red-600"><span className="font-medium">{t('generatorModal.rejectionReason')}</span> {rejectionReason}</p>
                                 )}
                             </div>
                         </div>
@@ -242,13 +246,13 @@ export function GeneratorModal({
                         {/* Focus Input */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Fokus (optional)
+                                {t('generatorModal.focusLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={focus}
                                 onChange={(e) => setFocus(e.target.value)}
-                                placeholder="z.B. 'Kommunikation verbessern' oder leer lassen"
+                                placeholder={t('generatorModal.focusPlaceholder')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 disabled={isGenerating || isSaving}
                             />
@@ -264,10 +268,10 @@ export function GeneratorModal({
                                 {isGenerating ? (
                                     <>
                                         <Loader2 size={18} className="animate-spin" />
-                                        Generiere Empfehlung...
+                                        {t('generatorModal.generating')}
                                     </>
                                 ) : (
-                                    'Empfehlung generieren'
+                                    t('generatorModal.generateButton')
                                 )}
                             </button>
                         )}
@@ -283,12 +287,12 @@ export function GeneratorModal({
                         {generated && (
                             <div className="space-y-4 border-t border-gray-200 pt-6">
                                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                    Generierte Empfehlung (editierbar):
+                                    {t('generatorModal.generatedTitle')}
                                 </h3>
 
                                 {/* Title */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Titel:</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('generatorModal.titleLabel')}</label>
                                     <input
                                         type="text"
                                         value={editedTitle}
@@ -300,7 +304,7 @@ export function GeneratorModal({
 
                                 {/* Description */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Beschreibung:</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('generatorModal.descriptionLabel')}</label>
                                     <textarea
                                         value={editedDescription}
                                         onChange={(e) => setEditedDescription(e.target.value)}
@@ -313,7 +317,7 @@ export function GeneratorModal({
                                 {/* Type & Priority */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Typ:</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('generatorModal.typeLabel')}</label>
                                         <select
                                             value={editedType}
                                             onChange={(e) => setEditedType(e.target.value as RecommendationType)}
@@ -328,7 +332,7 @@ export function GeneratorModal({
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Prioritaet:</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('generatorModal.priorityLabel')}</label>
                                         <select
                                             value={editedPriority}
                                             onChange={(e) => setEditedPriority(e.target.value as RecommendationPriority)}
@@ -344,7 +348,7 @@ export function GeneratorModal({
 
                                 {/* Affected Groups */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Betroffene Gruppen:</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('generatorModal.affectedGroupsLabel')}</label>
                                     <div className="flex flex-wrap gap-2">
                                         <label className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded cursor-pointer hover:bg-gray-200">
                                             <input
@@ -353,7 +357,7 @@ export function GeneratorModal({
                                                 onChange={handleToggleAll}
                                                 disabled={isSaving}
                                             />
-                                            <span className="text-sm">Alle</span>
+                                            <span className="text-sm">{tCommon('all')}</span>
                                         </label>
                                         {stakeholderGroups.map(group => (
                                             <label
@@ -367,7 +371,7 @@ export function GeneratorModal({
                                                     disabled={isSaving || editedAffectedGroups.includes('all')}
                                                 />
                                                 <span className="text-sm">
-                                                    {GROUP_TYPE_INFO[group.group_type]?.icon} {group.name || GROUP_TYPE_INFO[group.group_type]?.name}
+                                                    {GROUP_TYPE_INFO[group.group_type]?.icon} {group.name || tEnums(`stakeholderTypes.${group.group_type}.name`)}
                                                 </span>
                                             </label>
                                         ))}
@@ -376,7 +380,7 @@ export function GeneratorModal({
 
                                 {/* Steps */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Konkrete Schritte:</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('generatorModal.stepsLabel')}</label>
                                     <div className="space-y-2">
                                         {editedSteps.map((step, index) => (
                                             <div key={index} className="flex items-center gap-2">
@@ -386,7 +390,7 @@ export function GeneratorModal({
                                                     value={step}
                                                     onChange={(e) => handleUpdateStep(index, e.target.value)}
                                                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    placeholder="Schritt beschreiben..."
+                                                    placeholder={t('generatorModal.stepPlaceholder')}
                                                     disabled={isSaving}
                                                 />
                                                 <button
@@ -404,7 +408,7 @@ export function GeneratorModal({
                                             disabled={isSaving}
                                         >
                                             <Plus size={14} />
-                                            Schritt hinzufuegen
+                                            {t('generatorModal.addStep')}
                                         </button>
                                     </div>
                                 </div>
@@ -418,7 +422,7 @@ export function GeneratorModal({
                                     {isGenerating ? (
                                         <Loader2 size={14} className="animate-spin" />
                                     ) : (
-                                        <span>Neu generieren</span>
+                                        <span>{t('generatorModal.regenerate')}</span>
                                     )}
                                 </button>
                             </div>
@@ -459,7 +463,7 @@ export function GeneratorModal({
                         disabled={isGenerating || isSaving || isTyping}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
                     >
-                        Abbrechen
+                        {tCommon('buttons.cancel')}
                     </button>
                     {generated && (
                         <button
@@ -470,10 +474,10 @@ export function GeneratorModal({
                             {isSaving ? (
                                 <>
                                     <Loader2 size={16} className="animate-spin" />
-                                    Speichern...
+                                    {tCommon('buttons.saving')}
                                 </>
                             ) : (
-                                'Speichern'
+                                tCommon('buttons.save')
                             )}
                         </button>
                     )}

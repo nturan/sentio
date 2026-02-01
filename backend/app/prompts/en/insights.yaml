@@ -1,0 +1,119 @@
+system: |
+  Role: You are an experienced Change Management Analyst. Your task is to derive valuable insights from stakeholder feedback and project data that inspire concrete actions.
+
+  Your task: Analyze the provided data and identify:
+
+  1. **Trends**: Developments over time (positive or negative)
+  2. **Opportunities**: Areas with improvement potential
+  3. **Warnings**: Critical points that require attention
+  4. **Successes**: Positive developments that should be celebrated
+  5. **Patterns**: Recurring themes or connections
+
+  Guidelines:
+  - Formulate insights so that they inspire action
+  - Avoid vague statements - be specific and refer to the data
+  - Consider the Mendelow position of stakeholder groups
+  - Prioritize insights by their urgency and impact
+  - Suggest concrete next steps
+
+  Insight types:
+  - trend: Development over time (e.g., "Participation has been rising for 3 weeks")
+  - opportunity: Improvement opportunity (e.g., "Multipliers show high interest - perfect for ambassador program")
+  - warning: Critical point (e.g., "Orientation among leaders falls below critical threshold")
+  - success: Success (e.g., "Workshop initiative shows measurable improvement in psychological safety")
+  - pattern: Pattern (e.g., "Empowerment correlates strongly with appreciation across all groups")
+
+  Priority:
+  - high: Requires immediate attention or offers great opportunity
+  - medium: Important, but not time-critical
+  - low: Interesting to know, optional to address
+
+  IMPORTANT - Duplicate avoidance:
+  - Check the already generated insights and avoid repetitions
+  - Do NOT generate insights on topics that are already covered
+  - Instead, find new perspectives, other stakeholder groups, or undiscovered patterns
+  - If all obvious insights already exist, look for deeper connections
+
+json_format: |
+  ALWAYS respond in JSON format with the following structure:
+  {
+      "title": "Short, concise title",
+      "content": "Detailed explanation with reference to specific data",
+      "insight_type": "trend|opportunity|warning|success|pattern",
+      "priority": "high|medium|low",
+      "related_groups": ["group_id_1", "group_id_2"],
+      "related_recommendations": ["rec_id_1"],
+      "action_suggestions": [
+          "Concrete action suggestion 1",
+          "Concrete action suggestion 2"
+      ]
+  }
+
+# Context labels for user message
+labels:
+  unnamed: Unnamed
+  unknown: Unknown
+  power: Power
+  interest: Interest
+  position: Position
+  average: Average
+  assessments: assessments
+  weak: Weak
+  priority_label: priority
+  not_defined: Not defined
+  trend_up: (up)
+  trend_down: (down)
+  trend_stable: (stable)
+  default_project: Change Project
+
+# Status labels
+status_labels:
+  pending_approval: Awaiting approval
+  approved: Approved
+  started: In progress
+  completed: Completed
+  rejected: Rejected
+
+# Section headers
+sections:
+  stakeholder_groups: "Stakeholder Groups:"
+  impulse_overview: "Impulse Overview (latest assessments):"
+  recommendations: "Recommendations:"
+  existing_insights: "Already generated insights (DO NOT repeat):"
+  content: "Content:"
+
+# Trigger contexts
+triggers:
+  impulse_completed: |
+    CONTEXT: A new impulse was just captured for group {group_id}. Focus on current developments and new insights from this feedback.
+  recommendation_completed: |
+    CONTEXT: A recommendation was just completed (ID: {rec_id}). Analyze the success and identify possible follow-up insights.
+
+user_message: |
+  Analyze the following project data and generate ONE valuable insight:
+
+  === PROJECT CONTEXT ===
+  Project name: {project_name}
+  Project goal: {project_goal}
+
+  === STAKEHOLDER GROUPS ===
+  {stakeholder_context}
+
+  === STAKEHOLDER FEEDBACK (IMPULSES) ===
+  {impulse_context}
+
+  === RECOMMENDATIONS ===
+  {recommendations_context}
+
+  === ALREADY EXISTING INSIGHTS ===
+  {existing_insights_context}
+  {trigger_prompt}
+
+  === TASK ===
+  Generate ONE targeted, data-based insight with 2-3 concrete action suggestions.
+  The insight should be based on actual data and inspire concrete actions.
+
+  IMPORTANT: Avoid duplicates! The new insight must differ in content from existing ones.
+  Find a new perspective, a different stakeholder group, or an undiscovered pattern.
+
+  For related_groups and related_recommendations: Use the actual IDs from the context.

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Sparkles, FileText, Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import type { StakeholderGroupWithAssessments } from '../../types/stakeholder';
 import type { ImpulseHistory, Survey, SurveyQuestion, SurveyQuestionType } from '../../types/impulse';
@@ -17,6 +18,9 @@ interface SurveyGeneratorModalProps {
 }
 
 export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose }: SurveyGeneratorModalProps) {
+    const { t } = useTranslation('impulse');
+    const { t: tCommon } = useTranslation('common');
+    const { t: tEnums } = useTranslation('enums');
     const { triggerRefresh } = useRefresh();
     const [isGenerating, setIsGenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -24,6 +28,7 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
     const [savedPath, setSavedPath] = useState<string | null>(null);
 
     const typeInfo = GROUP_TYPE_INFO[group.group_type];
+    const groupName = group.name || tEnums(`stakeholderTypes.${group.group_type}.name`);
 
     // Calculate context info for display
     const impulses = impulseHistory?.impulses || [];
@@ -95,7 +100,7 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
             setSurvey(response.survey);
         } catch (err) {
             console.error('Failed to generate survey:', err);
-            alert('Fehler beim Generieren der Umfrage.');
+            alert(t('surveyGenerator.generateError'));
         } finally {
             setIsGenerating(false);
         }
@@ -111,7 +116,7 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
             triggerRefresh('impulses');
         } catch (err) {
             console.error('Failed to save survey:', err);
-            alert('Fehler beim Speichern der Umfrage.');
+            alert(t('surveyGenerator.saveError'));
         } finally {
             setIsSaving(false);
         }
@@ -168,10 +173,10 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                 <div style={{ flexShrink: 0 }} className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-800">
-                            Umfrage erstellen - {group.name || typeInfo?.name}
+                            {t('surveyGenerator.title', { groupName })}
                         </h2>
                         <p className="text-sm text-gray-500">
-                            {typeInfo?.subtitle}
+                            {tEnums(`stakeholderTypes.${group.group_type}.subtitle`)}
                         </p>
                     </div>
                     <button
@@ -194,22 +199,22 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                     }} className="space-y-6">
                         {/* Context Info */}
                         <div className="bg-gray-50 rounded-lg p-4">
-                            <h3 className="text-sm font-medium text-gray-700 mb-2">Kontext fuer den Agenten:</h3>
+                            <h3 className="text-sm font-medium text-gray-700 mb-2">{t('surveyGenerator.contextTitle')}</h3>
                             <ul className="text-sm text-gray-600 space-y-1">
                                 <li>
-                                    <span className="text-gray-400">•</span> Gruppe: {group.name || typeInfo?.name}
+                                    <span className="text-gray-400">•</span> {t('surveyGenerator.contextGroup')} {groupName}
                                 </li>
                                 <li>
-                                    <span className="text-gray-400">•</span> Position: {group.mendelow_quadrant} ({group.mendelow_strategy})
+                                    <span className="text-gray-400">•</span> {t('surveyGenerator.contextPosition')} {group.mendelow_quadrant} ({group.mendelow_strategy})
                                 </li>
                                 {avgRating && (
                                     <li>
-                                        <span className="text-gray-400">•</span> Letzte {impulses.length} Impulse: Durchschnitt {avgRating}
+                                        <span className="text-gray-400">•</span> {t('surveyGenerator.contextImpulses', { count: impulses.length, avg: avgRating })}
                                     </li>
                                 )}
                                 {weakestIndicator && (
                                     <li>
-                                        <span className="text-gray-400">•</span> Schwachstelle: {weakestIndicator.key} (Durchschnitt {weakestIndicator.avg.toFixed(1)})
+                                        <span className="text-gray-400">•</span> {t('surveyGenerator.contextWeakness', { indicator: weakestIndicator.key, avg: weakestIndicator.avg.toFixed(1) })}
                                     </li>
                                 )}
                             </ul>
@@ -226,12 +231,12 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                                     {isGenerating ? (
                                         <>
                                             <Loader2 size={20} className="animate-spin" />
-                                            Generiere Umfrage...
+                                            {t('surveyGenerator.generating')}
                                         </>
                                     ) : (
                                         <>
                                             <Sparkles size={20} />
-                                            Umfrage generieren
+                                            {t('surveyGenerator.generateButton')}
                                         </>
                                     )}
                                 </button>
@@ -240,10 +245,10 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                             <div className="text-center py-8">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg mb-4">
                                     <FileText size={20} />
-                                    Umfrage gespeichert!
+                                    {t('surveyGenerator.saved')}
                                 </div>
                                 <p className="text-sm text-gray-600">
-                                    Gespeichert unter: <code className="bg-gray-100 px-2 py-1 rounded">{savedPath}</code>
+                                    {t('surveyGenerator.savedAt')} <code className="bg-gray-100 px-2 py-1 rounded">{savedPath}</code>
                                 </p>
                             </div>
                         ) : (
@@ -251,7 +256,7 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                                 {/* Survey Title & Description */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Titel
+                                        {t('surveyGenerator.titleLabel')}
                                     </label>
                                     <input
                                         type="text"
@@ -263,7 +268,7 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Beschreibung
+                                        {t('surveyGenerator.descriptionLabel')}
                                     </label>
                                     <textarea
                                         value={survey.description}
@@ -276,13 +281,13 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                                 {/* Questions */}
                                 <div>
                                     <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-sm font-medium text-gray-700">Fragen</h3>
+                                        <h3 className="text-sm font-medium text-gray-700">{t('surveyGenerator.questionsLabel')}</h3>
                                         <button
                                             onClick={addQuestion}
                                             className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700"
                                         >
                                             <Plus size={16} />
-                                            Frage hinzufuegen
+                                            {t('surveyGenerator.addQuestion')}
                                         </button>
                                     </div>
 
@@ -294,6 +299,7 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                                                 question={question}
                                                 onUpdate={(field, value) => updateQuestion(index, field, value)}
                                                 onRemove={() => removeQuestion(index)}
+                                                t={t}
                                             />
                                         ))}
                                     </div>
@@ -323,7 +329,7 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                                     messages={messages}
                                     onSendMessage={sendMessage}
                                     isTyping={isTyping}
-                                    placeholder="Fragen zur Umfrage oder Aenderungswuensche..."
+                                    placeholder={t('surveyGenerator.chatPlaceholder')}
                                 />
                             </div>
                         </div>
@@ -337,7 +343,7 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                         disabled={isTyping}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
                     >
-                        {savedPath ? 'Schliessen' : 'Abbrechen'}
+                        {savedPath ? tCommon('buttons.close') : tCommon('buttons.cancel')}
                     </button>
                     {survey && !savedPath && (
                         <button
@@ -348,12 +354,12 @@ export function SurveyGeneratorModal({ group, projectId, impulseHistory, onClose
                             {isSaving ? (
                                 <>
                                     <Loader2 size={16} className="animate-spin" />
-                                    Speichere...
+                                    {tCommon('buttons.saving')}
                                 </>
                             ) : (
                                 <>
                                     <Save size={16} />
-                                    Als Markdown speichern
+                                    {t('surveyGenerator.saveAsMarkdown')}
                                 </>
                             )}
                         </button>
@@ -369,21 +375,22 @@ interface QuestionEditorProps {
     question: SurveyQuestion;
     onUpdate: (field: keyof SurveyQuestion, value: string | boolean) => void;
     onRemove: () => void;
+    t: (key: string, options?: Record<string, unknown>) => string;
 }
 
-function QuestionEditor({ index, question, onUpdate, onRemove }: QuestionEditorProps) {
+function QuestionEditor({ index, question, onUpdate, onRemove, t }: QuestionEditorProps) {
     return (
         <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
             <div className="flex items-start justify-between gap-4 mb-3">
-                <span className="text-sm font-medium text-gray-500">Frage {index + 1}</span>
+                <span className="text-sm font-medium text-gray-500">{t('surveyGenerator.questionLabel', { number: index + 1 })}</span>
                 <div className="flex items-center gap-2">
                     <select
                         value={question.type}
                         onChange={(e) => onUpdate('type', e.target.value as SurveyQuestionType)}
                         className="text-sm border border-gray-300 rounded px-2 py-1"
                     >
-                        <option value="scale">Skala (1-10)</option>
-                        <option value="freetext">Freitext</option>
+                        <option value="scale">{t('surveyGenerator.questionTypeScale')}</option>
+                        <option value="freetext">{t('surveyGenerator.questionTypeFreetext')}</option>
                     </select>
                     <button
                         onClick={onRemove}
@@ -398,7 +405,7 @@ function QuestionEditor({ index, question, onUpdate, onRemove }: QuestionEditorP
                 type="text"
                 value={question.question}
                 onChange={(e) => onUpdate('question', e.target.value)}
-                placeholder="Fragetext eingeben..."
+                placeholder={t('surveyGenerator.questionPlaceholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
             />
 
@@ -410,7 +417,7 @@ function QuestionEditor({ index, question, onUpdate, onRemove }: QuestionEditorP
                         onChange={(e) => onUpdate('includeJustification', e.target.checked)}
                         className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                     />
-                    Begruendung optional
+                    {t('surveyGenerator.justificationOptional')}
                 </label>
             )}
         </div>

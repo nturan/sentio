@@ -10,60 +10,24 @@ from typing import List, Optional
 import json
 
 from .mcp_client import MCPClientManager
+from ..prompts import load_prompt
 
 
 class SurveyQuestion(BaseModel):
     """A single survey question."""
     id: str = Field(description="Unique identifier for the question")
     type: str = Field(description="Question type: 'scale' or 'freetext'")
-    question: str = Field(description="The question text in German")
+    question: str = Field(description="The question text")
     includeJustification: Optional[bool] = Field(default=False, description="Whether to include optional justification field for scale questions")
 
 
 class Survey(BaseModel):
     """A generated survey."""
     project_title: Optional[str] = Field(default=None, description="Name of the change project")
-    title: str = Field(description="Survey title in German")
-    description: str = Field(description="Brief description of the survey purpose in German")
+    title: str = Field(description="Survey title")
+    description: str = Field(description="Brief description of the survey purpose")
     questions: List[SurveyQuestion] = Field(description="List of survey questions")
-    estimated_duration: str = Field(default="~3 Minuten", description="Estimated time to complete")
-
-
-SURVEY_SYSTEM_PROMPT = """Rolle: Du bist ein erfahrener Experte fuer Employee Experience und Change Management. Deine Spezialitaet ist es, komplexe psychologische Sicherheits- und Motivationsfaktoren in einfache, nahbare Sprache zu uebersetzen.
-
-Zielgruppe: Mitarbeitende und Multiplikatoren in einem Unternehmen, das sich aktuell im Wandel befindet (z.B. digitale Transformation oder Restrukturierung).
-
-Deine Aufgabe: Erstelle eine praegnante Puls-Check-Umfrage (3-5 Fragen). Du musst die Projektbeschreibung zwingend einbeziehen, damit die Fragen einen direkten Bezug zum Arbeitsalltag der Mitarbeitenden in diesem spezifischen Projekt haben. Die Fragen muessen natuerlich, wertschaetzend und alltagsnah klingen - vermeide starren Corporate-Jargon.
-
-Leitplanken fuer die Formulierungen:
-- Statt "Partizipation" frage: "Hattest du diese Woche das Gefuehl, dass deine Meinung im Rahmen von [Projektname] wirklich zaehlt?"
-- Statt "Psychologische Sicherheit" frage: "Wie leicht fiel es dir zuletzt, Bedenken bezueglich der neuen Prozesse offen anzusprechen?"
-- Statt "Orientierung" frage: "Weisst du aktuell genau, wie dein Beitrag zum Erfolg von [Projektname] aussieht?"
-
-Bewertungsfaktoren als inhaltliche Basis:
-- Orientierung & Sinn: Klarheit der Projektvision und intrinsische Motivation
-- Psychologische Sicherheit: Offene Fehlerkultur und Mut zu abweichenden Meinungen
-- Empowerment: Echte Entscheidungsbefugnisse und Autonomie
-- Partizipation: Aktive Einbindung und Transparenz
-- Wertschaetzung: Empathischer Umgang und Anerkennung
-
-Anforderungen:
-- Fokus: Verknuepfe die Fragen direkt mit den Inhalten der Projektbeschreibung
-- Mix: Verwende Skala-Fragen (1-10) und genau eine tiefgruendige Freitext-Frage am Ende
-- Sprache: Deutsch (Du-Form, modern und direkt)"""
-
-SURVEY_JSON_FORMAT = """
-Antwortformat (striktes JSON):
-{
-    "project_title": "Name des Change-Projekts aus der Beschreibung",
-    "title": "Titel der Umfrage",
-    "description": "Ein motivierender Einleitungssatz, der auf das spezifische Projekt Bezug nimmt",
-    "questions": [
-        {"id": "q1", "type": "scale", "question": "Fragetext", "includeJustification": true},
-        {"id": "q2", "type": "freetext", "question": "Fragetext"}
-    ],
-    "estimated_duration": "~3 Minuten"
-}"""
+    estimated_duration: str = Field(default="~3 minutes", description="Estimated time to complete")
 
 
 class SurveyAgent:
@@ -161,16 +125,26 @@ class SurveyAgent:
         """
         Internal method to generate survey with provided context.
         """
+        # Load localized labels
+        history_header = load_prompt("survey", "history_header")
+        history_line_template = load_prompt("survey", "history_line")
+        history_rating_template = load_prompt("survey", "history_rating")
+        history_weaknesses_template = load_prompt("survey", "history_weaknesses")
+        history_average_label = load_prompt("survey", "history_average_label")
+        history_unknown_date = load_prompt("survey", "history_unknown_date")
+
         # Build context from impulse history
         history_context = ""
         if impulse_history:
-            history_context = "\n=== BISHERIGES FEEDBACK ===\n"
+            history_context = "\n" + history_header
             for impulse in impulse_history[:5]:
-                history_context += f"- {impulse.get('date', 'Unbekannt')}: Durchschnitt {impulse.get('average_rating', 'N/A')}\n"
+                date = impulse.get('date', history_unknown_date)
+                avg = impulse.get('average_rating', 'N/A')
+                history_context += history_line_template.format(date=date, average=avg) + "\n"
                 ratings = impulse.get('ratings', {})
                 if ratings:
                     for key, value in ratings.items():
-                        history_context += f"  * {key}: {value}\n"
+                        history_context += history_rating_template.format(key=key, value=value) + "\n"
 
             # Identify weak areas
             all_ratings = {}
@@ -185,37 +159,29 @@ class SurveyAgent:
                 for key, values in all_ratings.items():
                     avg = sum(values) / len(values)
                     if avg < 6:
-                        weak_areas.append(f"{key} (Durchschnitt: {avg:.1f})")
+                        weak_areas.append(f"{key} ({history_average_label}: {avg:.1f})")
 
                 if weak_areas:
-                    history_context += f"\nIdentifizierte Schwachstellen: {', '.join(weak_areas)}\n"
+                    history_context += "\n" + history_weaknesses_template.format(weaknesses=", ".join(weak_areas)) + "\n"
 
-        # Build user message with structured context
-        project_display_name = project_name or "Change-Projekt"
-        user_message = f"""Erstelle eine Puls-Check-Umfrage fuer folgende Situation:
+        # Build user message from localized template
+        project_display_name = project_name or "Change Project"
+        default_goal = "Digital transformation and process optimization"
+        user_message_template = load_prompt("survey", "user_message")
+        user_message = user_message_template.format(
+            project_name=project_display_name,
+            project_goal=project_goal or default_goal,
+            group_name=group_name or group_type,
+            group_type=group_type,
+            mendelow_quadrant=mendelow_quadrant,
+            mendelow_strategy=mendelow_strategy,
+            history_context=history_context
+        )
 
-=== PROJEKTKONTEXT ===
-Projektname: {project_display_name}
-Projektbeschreibung/Ziel: {project_goal or 'Digitale Transformation und Prozessoptimierung'}
-
-=== ZIELGRUPPE ===
-Stakeholder-Gruppe: {group_name or group_type}
-Gruppentyp: {group_type}
-Mendelow-Position: {mendelow_quadrant}
-Engagement-Strategie: {mendelow_strategy}
-{history_context}
-
-=== AUFGABE ===
-Erstelle 3-5 gezielte Fragen, die:
-- Einen direkten Bezug zum Projekt "{project_display_name}" haben
-- Die aktuelle Stimmung und Beduerfnisse der Zielgruppe erfassen
-- Besonders auf die identifizierten Schwachstellen eingehen
-- In der Du-Form formuliert sind und nahbar klingen
-
-Wichtig: Ersetze [Projektname] in deinen Fragen durch "{project_display_name}"."""
-
-        # Build system message
-        system_message = SURVEY_SYSTEM_PROMPT + SURVEY_JSON_FORMAT
+        # Build system message from localized prompts
+        system_prompt = load_prompt("survey", "system")
+        json_format = load_prompt("survey", "json_format")
+        system_message = system_prompt + json_format
 
         # Use direct message list to avoid template escaping issues
         messages = [

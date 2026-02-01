@@ -9,136 +9,17 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
 
 from .base import BaseFactory
+from ..prompts import load_constants
 
 
-# German recommendation templates by type
-RECOMMENDATION_TEMPLATES = {
-    "habit": [
-        {
-            "title": "Tägliches 5-Minuten Standup",
-            "description": "Ein kurzes tägliches Standup-Meeting fördert die Kommunikation und Transparenz im Team. Es hilft, Blocker früh zu erkennen und den Teamzusammenhalt zu stärken.",
-            "steps": [
-                "Zeitslot festlegen (z.B. 9:00 Uhr)",
-                "Feste 3 Fragen einführen: Was habe ich gestern erreicht? Was mache ich heute? Was blockiert mich?",
-                "Timekeeper bestimmen (rotierend)",
-                "Nach 2 Wochen Feedback einholen und anpassen",
-            ],
-        },
-        {
-            "title": "Wöchentliche Erfolgs-Reflexion",
-            "description": "Teams reflektieren wöchentlich ihre Erfolge und Fortschritte. Dies stärkt die positive Wahrnehmung des Changes und motiviert das Team.",
-            "steps": [
-                "Freitags 15 Minuten einplanen",
-                "Jedes Teammitglied teilt einen Erfolg der Woche",
-                "Erfolge visuell festhalten (z.B. Erfolgsboard)",
-                "Monatlich größte Erfolge feiern",
-            ],
-        },
-    ],
-    "communication": [
-        {
-            "title": "Transparenz-Newsletter",
-            "description": "Ein regelmäßiger Newsletter informiert alle Betroffenen über Fortschritte, Entscheidungen und nächste Schritte. Dies reduziert Gerüchte und stärkt das Vertrauen.",
-            "steps": [
-                "Redaktionsteam bestimmen",
-                "Erscheinungsrhythmus festlegen (z.B. alle 2 Wochen)",
-                "Feste Rubriken definieren: Highlights, Entscheidungen, FAQ, Termine",
-                "Feedback-Kanal einrichten",
-            ],
-        },
-        {
-            "title": "Führungskräfte-Briefing etablieren",
-            "description": "Regelmäßige Briefings für Führungskräfte stellen sicher, dass diese die Botschaften korrekt in ihre Teams tragen können.",
-            "steps": [
-                "Wöchentliches 30-Minuten-Format",
-                "Talking Points vorbereiten",
-                "Q&A-Runde einplanen",
-                "Feedback aus den Teams sammeln",
-            ],
-        },
-    ],
-    "workshop": [
-        {
-            "title": "Change-Fitness Training",
-            "description": "Ein Workshop zur Stärkung der individuellen Veränderungskompetenz. Teilnehmende lernen, mit Unsicherheit umzugehen und Veränderungen aktiv zu gestalten.",
-            "steps": [
-                "Externe Trainer identifizieren",
-                "Pilotgruppe auswählen",
-                "Halbtages-Format planen",
-                "Transferaufgaben definieren",
-                "Follow-up Session nach 4 Wochen",
-            ],
-        },
-        {
-            "title": "Stakeholder-Alignment Workshop",
-            "description": "Ein moderierter Workshop zur Abstimmung der Erwartungen und Ziele zwischen verschiedenen Stakeholder-Gruppen.",
-            "steps": [
-                "Schlüssel-Stakeholder identifizieren",
-                "Vorbereitende Interviews führen",
-                "Ganztages-Workshop planen",
-                "Gemeinsame Roadmap entwickeln",
-                "Commitment dokumentieren",
-            ],
-        },
-    ],
-    "process": [
-        {
-            "title": "Feedback-Loops etablieren",
-            "description": "Systematische Feedback-Prozesse ermöglichen schnelles Lernen und Anpassen. Betroffene werden zu Mitgestaltern.",
-            "steps": [
-                "Feedback-Kanäle definieren (digital + analog)",
-                "Schnelle Reaktionszeiten zusagen (<48h)",
-                "Feedback-Dashboard einrichten",
-                "Monatliche Feedback-Auswertung",
-            ],
-        },
-        {
-            "title": "Entscheidungs-Delegation Matrix",
-            "description": "Klare Definition, welche Entscheidungen auf welcher Ebene getroffen werden. Dies beschleunigt Prozesse und stärkt Empowerment.",
-            "steps": [
-                "Entscheidungskategorien identifizieren",
-                "Delegation Levels festlegen",
-                "Matrix visualisieren und kommunizieren",
-                "Quartalsweise Review",
-            ],
-        },
-    ],
-    "campaign": [
-        {
-            "title": "Quick-Win Kampagne",
-            "description": "Fokussierte Kampagne zur Erzielung schneller, sichtbarer Erfolge. Diese stärken das Vertrauen in den Change-Prozess.",
-            "steps": [
-                "3-5 Quick Wins identifizieren",
-                "Verantwortliche benennen",
-                "4-Wochen-Sprint planen",
-                "Erfolge prominent kommunizieren",
-            ],
-        },
-        {
-            "title": "Change-Botschafter Programm",
-            "description": "Ausbildung und Aktivierung von Change-Botschaftern in allen Bereichen, die als Multiplikatoren und Ansprechpartner fungieren.",
-            "steps": [
-                "Freiwillige Botschafter rekrutieren",
-                "Schulungsprogramm entwickeln",
-                "Regelmäßige Botschafter-Treffen",
-                "Ressourcen und Tools bereitstellen",
-                "Erfolge der Botschafter würdigen",
-            ],
-        },
-    ],
-}
+def get_recommendation_templates() -> Dict[str, List[Dict]]:
+    """Load localized recommendation templates."""
+    return load_constants("recommendation_templates")
 
-# Rejection reasons in German
-REJECTION_REASONS = [
-    "Zu hoher Zeitaufwand für aktuelles Projektphase",
-    "Budget nicht ausreichend",
-    "Andere Prioritäten im aktuellen Sprint",
-    "Stakeholder-Akzeptanz fraglich",
-    "Ähnliche Initiative bereits in Planung",
-    "Ressourcen nicht verfügbar",
-    "Nicht passend für unsere Unternehmenskultur",
-    "Zeitpunkt ungünstig - nach Jahresabschluss erneut prüfen",
-]
+
+def get_rejection_reasons() -> List[str]:
+    """Load localized rejection reasons."""
+    return load_constants("rejection_reasons")
 
 
 class RecommendationFactory(BaseFactory):
@@ -164,8 +45,9 @@ class RecommendationFactory(BaseFactory):
     ) -> Dict[str, Any]:
         """Build a recommendation dict without persisting."""
         # Pick a random type and template if not specified
-        rec_type = recommendation_type or random.choice(list(RECOMMENDATION_TEMPLATES.keys()))
-        templates = RECOMMENDATION_TEMPLATES.get(rec_type, RECOMMENDATION_TEMPLATES["habit"])
+        recommendation_templates = get_recommendation_templates()
+        rec_type = recommendation_type or random.choice(list(recommendation_templates.keys()))
+        templates = recommendation_templates.get(rec_type, recommendation_templates["habit"])
         template = random.choice(templates)
 
         return {
@@ -285,7 +167,7 @@ class RecommendationFactory(BaseFactory):
 
         if status == "rejected":
             # Rejected after 2-3 days
-            rejection_reason = random.choice(REJECTION_REASONS)
+            rejection_reason = random.choice(get_rejection_reasons())
 
         elif status == "approved":
             # Approved after 1-2 days
@@ -339,14 +221,15 @@ class RecommendationFactory(BaseFactory):
 
         # Track used templates to avoid duplicates
         used_templates = set()
+        recommendation_templates = get_recommendation_templates()
 
         for status, count in status_counts.items():
             for _ in range(count):
                 days_ago = random.randint(min_days, max_days)
 
                 # Try to pick unused template
-                rec_type = random.choice(list(RECOMMENDATION_TEMPLATES.keys()))
-                templates = RECOMMENDATION_TEMPLATES[rec_type]
+                rec_type = random.choice(list(recommendation_templates.keys()))
+                templates = recommendation_templates[rec_type]
 
                 # Find unused template
                 template = None

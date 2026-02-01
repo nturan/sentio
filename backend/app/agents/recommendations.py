@@ -10,56 +10,17 @@ from typing import List, Optional
 import json
 
 from .mcp_client import MCPClientManager
+from ..prompts import load_prompt
 
 
 class GeneratedRecommendation(BaseModel):
     """A generated recommendation from AI."""
-    title: str = Field(description="Title of the recommendation in German")
-    description: str = Field(description="Detailed description of the recommendation in German")
+    title: str = Field(description="Title of the recommendation")
+    description: str = Field(description="Detailed description of the recommendation")
     recommendation_type: str = Field(description="Type: 'habit', 'communication', 'workshop', 'process', or 'campaign'")
     priority: str = Field(description="Priority: 'high', 'medium', or 'low'")
     affected_groups: List[str] = Field(description="List of affected stakeholder group IDs or ['all']")
-    steps: List[str] = Field(description="List of concrete action steps in German")
-
-
-RECOMMENDATION_SYSTEM_PROMPT_BASE = """Rolle: Du bist ein Experte fuer Change Management. Deine Aufgabe ist es, konkrete, umsetzbare Handlungsempfehlungen zu entwickeln, die direkt auf dem spezifischen Projektkontext und dem vorliegenden Stakeholder-Feedback basieren.
-
-Deine Aufgabe: Analysiere das Stakeholder-Feedback und die identifizierten Schwachstellen im Hinblick auf das Projekt. Erstelle daraufhin Empfehlungen, die:
-
-1. Konkret und umsetzbar sind (keine vagen Phrasen)
-2. Einen klaren Bezug zu den identifizierten Problemen haben
-3. Die betroffenen Stakeholder-Gruppen explizit beruecksichtigen
-4. Realistische Schritte zur Umsetzung enthalten
-5. Eine Mischung aus Mikro-Gewohnheiten und strategischen Initiativen darstellen
-
-Format der Empfehlungen - kategorisiere jede Empfehlung nach folgendem Schema:
-
-Typ:
-- habit: Kleine taegliche/woechentliche Routinen (z.B. "5-Minuten Daily Check-in")
-- communication: Kommunikationsverbesserungen (z.B. "Woechentlicher Newsletter")
-- workshop: Trainings oder Workshop-Sessions (z.B. "Change Agent Training")
-- process: Prozessaenderungen (z.B. "Neuer Feedback-Loop")
-- campaign: Groessere Initiativen (z.B. "Anerkennungsprogramm")
-
-Prioritaet:
-- high: Dringend, sofortiger Handlungsbedarf
-- medium: Wichtig, aber nicht zeitkritisch
-- low: Optional, bei verfuegbaren Ressourcen"""
-
-RECOMMENDATION_JSON_FORMAT = """
-Antworte IMMER im JSON-Format mit folgender Struktur:
-{
-    "title": "Kurzer, praegananter Titel",
-    "description": "Ausfuehrliche Beschreibung der Empfehlung",
-    "recommendation_type": "habit|communication|workshop|process|campaign",
-    "priority": "high|medium|low",
-    "affected_groups": ["group_id_1", "group_id_2"] oder ["all"],
-    "steps": [
-        "Schritt 1: Konkrete Handlung",
-        "Schritt 2: Konkrete Handlung",
-        "Schritt 3: Konkrete Handlung"
-    ]
-}"""
+    steps: List[str] = Field(description="List of concrete action steps")
 
 
 class RecommendationAgent:
@@ -235,14 +196,8 @@ class RecommendationAgent:
         # Build rejection context if regenerating
         rejection_prompt = ""
         if rejection_context:
-            rejection_prompt = f"""
-WICHTIG: Die vorherige Empfehlung wurde abgelehnt. Hier ist der Grund:
-"{rejection_context}"
-
-Bitte generiere eine ALTERNATIVE Empfehlung, die diesen Einwand beruecksichtigt. Die neue Empfehlung sollte:
-- Das gleiche Problem adressieren, aber auf eine andere Weise
-- Den genannten Ablehnungsgrund beruecksichtigen
-- Realistischer und umsetzbar sein"""
+            rejection_template = load_prompt("recommendations", "rejection_context")
+            rejection_prompt = rejection_template.format(reason=rejection_context)
 
         # Build focus context
         focus_prompt = ""
@@ -269,11 +224,13 @@ Die Empfehlung soll direkt auf die identifizierten Schwachstellen eingehen und d
 
 Bei der Auswahl der affected_groups: Verwende die tatsaechlichen Gruppen-IDs oder "all" wenn alle betroffen sind."""
 
-        # Build system prompt
-        system_parts = [RECOMMENDATION_SYSTEM_PROMPT_BASE]
+        # Build system prompt from localized prompts
+        system_prompt = load_prompt("recommendations", "system")
+        json_format = load_prompt("recommendations", "json_format")
+        system_parts = [system_prompt]
         if rejection_prompt:
             system_parts.append(rejection_prompt)
-        system_parts.append(RECOMMENDATION_JSON_FORMAT)
+        system_parts.append(json_format)
         system_message = "\n".join(system_parts)
 
         # Use direct message list instead of ChatPromptTemplate to avoid escaping issues

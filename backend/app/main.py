@@ -9,6 +9,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 import json
+from pathlib import Path
 
 from .agents.knowledge import KnowledgeAgent
 from .agents.orchestrator import OrchestratorAgent
@@ -19,7 +20,9 @@ from .agents.mcp_client import MCPClientManager
 from .database import init_database
 from .routers import sessions, projects, documents, workflow, stakeholders, surveys, recommendations, seed, insights
 
-load_dotenv()
+# Load .env from project root
+root_env = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(root_env)
 
 
 @asynccontextmanager

@@ -24,6 +24,10 @@
         "interest": "Interest",
         "quadrant": "Quadrant"
     },
+    "card": {
+        "showDetails": "Show details",
+        "delete": "Delete"
+    },
     "mendelow": {
         "title": "Mendelow Matrix",
         "power": "POWER",

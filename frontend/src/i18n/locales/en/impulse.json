@@ -8,6 +8,17 @@
     },
     "allImpulses": "All Impulses",
     "noImpulses": "No impulses recorded yet",
+    "groupCard": {
+        "ratingFactors": "rating factors",
+        "current": "Current",
+        "lastImpulses": "Last Impulses:",
+        "noAssessments": "No assessments yet",
+        "average": "Average",
+        "fromSurvey": "(from survey)",
+        "ratingCount": "{{count}} ratings",
+        "manualAssessment": "Manual Assessment",
+        "createSurvey": "Create Survey"
+    },
     "table": {
         "date": "Date",
         "group": "Group",
@@ -45,5 +56,30 @@
         "aktive_kommunikation": "Active Communication",
         "widerstandsmanagement": "Resistance Management",
         "vorbildfunktion": "Role Model Function"
+    },
+    "surveyGenerator": {
+        "title": "Create Survey - {{groupName}}",
+        "contextTitle": "Context for the agent:",
+        "contextGroup": "Group:",
+        "contextPosition": "Position:",
+        "contextImpulses": "Last {{count}} impulses: Average {{avg}}",
+        "contextWeakness": "Weakness: {{indicator}} (Average {{avg}})",
+        "generating": "Generating survey...",
+        "generateButton": "Generate survey",
+        "saved": "Survey saved!",
+        "savedAt": "Saved at:",
+        "titleLabel": "Title",
+        "descriptionLabel": "Description",
+        "questionsLabel": "Questions",
+        "addQuestion": "Add question",
+        "chatPlaceholder": "Questions about the survey or change requests...",
+        "saveAsMarkdown": "Save as Markdown",
+        "questionLabel": "Question {{number}}",
+        "questionTypeScale": "Scale (1-10)",
+        "questionTypeFreetext": "Free text",
+        "questionPlaceholder": "Enter question text...",
+        "justificationOptional": "Justification optional",
+        "generateError": "Error generating survey.",
+        "saveError": "Error saving survey."
     }
 }

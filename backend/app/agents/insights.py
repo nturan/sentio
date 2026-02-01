@@ -10,68 +10,18 @@ from typing import List, Optional
 import json
 
 from .mcp_client import MCPClientManager
+from ..prompts import load_prompt, load_constants
 
 
 class GeneratedInsight(BaseModel):
     """A generated insight from AI."""
-    title: str = Field(description="Concise title of the insight in German")
-    content: str = Field(description="Detailed explanation with data references in German")
+    title: str = Field(description="Concise title of the insight")
+    content: str = Field(description="Detailed explanation with data references")
     insight_type: str = Field(description="Type: 'trend', 'opportunity', 'warning', 'success', or 'pattern'")
     priority: str = Field(description="Priority: 'high', 'medium', or 'low'")
     related_groups: List[str] = Field(description="List of related stakeholder group IDs or []")
     related_recommendations: List[str] = Field(description="List of related recommendation IDs or []")
-    action_suggestions: List[str] = Field(description="List of 2-3 concrete action suggestions in German")
-
-
-INSIGHTS_SYSTEM_PROMPT = """Rolle: Du bist ein erfahrener Change Management Analyst. Deine Aufgabe ist es, aus Stakeholder-Feedback und Projektdaten wertvolle Erkenntnisse (Insights) abzuleiten, die zu konkreten Handlungen inspirieren.
-
-Deine Aufgabe: Analysiere die bereitgestellten Daten und identifiziere:
-
-1. **Trends**: Entwicklungen ueber Zeit (positive oder negative)
-2. **Chancen**: Bereiche mit Verbesserungspotential
-3. **Warnungen**: Kritische Punkte, die Aufmerksamkeit erfordern
-4. **Erfolge**: Positive Entwicklungen, die gefeiert werden sollten
-5. **Muster**: Wiederkehrende Themen oder Zusammenhaenge
-
-Leitplanken:
-- Formuliere Insights so, dass sie zu Handlungen inspirieren
-- Vermeide vage Aussagen - sei konkret und beziehe dich auf die Daten
-- Beruecksichtige die Mendelow-Position der Stakeholder-Gruppen
-- Priorisiere Insights nach ihrer Dringlichkeit und Auswirkung
-- Schlage konkrete naechste Schritte vor
-
-Insight-Typen:
-- trend: Entwicklung ueber Zeit (z.B. "Partizipation steigt seit 3 Wochen")
-- opportunity: Verbesserungschance (z.B. "Multiplikatoren zeigen hohes Interesse - perfekt fuer Botschafter-Programm")
-- warning: Kritischer Punkt (z.B. "Orientierung bei Fuehrungskraeften faellt unter kritischen Schwellenwert")
-- success: Erfolg (z.B. "Workshop-Initiative zeigt messbare Verbesserung bei psychologischer Sicherheit")
-- pattern: Muster (z.B. "Empowerment korreliert stark mit Wertschaetzung ueber alle Gruppen")
-
-Prioritaet:
-- high: Erfordert sofortige Aufmerksamkeit oder bietet grosse Chance
-- medium: Wichtig, aber nicht zeitkritisch
-- low: Interessant zu wissen, optional zu adressieren
-
-WICHTIG - Duplikatvermeidung:
-- Pruefe die bereits generierten Insights und vermeide Wiederholungen
-- Generiere KEINE Insights zu Themen, die bereits abgedeckt sind
-- Finde stattdessen neue Blickwinkel, andere Stakeholder-Gruppen oder unentdeckte Muster
-- Wenn alle offensichtlichen Insights bereits existieren, suche nach tieferen Zusammenhaengen"""
-
-INSIGHTS_JSON_FORMAT = """
-Antworte IMMER im JSON-Format mit folgender Struktur:
-{
-    "title": "Kurzer, praegnanter Titel",
-    "content": "Ausfuehrliche Erklaerung mit Bezug auf konkrete Daten",
-    "insight_type": "trend|opportunity|warning|success|pattern",
-    "priority": "high|medium|low",
-    "related_groups": ["group_id_1", "group_id_2"],
-    "related_recommendations": ["rec_id_1"],
-    "action_suggestions": [
-        "Konkrete Handlungsempfehlung 1",
-        "Konkrete Handlungsempfehlung 2"
-    ]
-}"""
+    action_suggestions: List[str] = Field(description="List of 2-3 concrete action suggestions")
 
 
 class InsightsAgent:
@@ -210,110 +160,95 @@ class InsightsAgent:
         """
         Internal method to generate insight with provided context.
         """
+        # Load localized labels
+        labels = load_prompt("insights", "labels")
+        status_labels = load_prompt("insights", "status_labels")
+        sections = load_prompt("insights", "sections")
+        triggers = load_prompt("insights", "triggers")
+        user_message_template = load_prompt("insights", "user_message")
+
         # Build stakeholder context
         stakeholder_context = ""
         if stakeholder_groups:
-            stakeholder_context = "\nStakeholder-Gruppen:\n"
+            stakeholder_context = f"\n{sections['stakeholder_groups']}\n"
             for group in stakeholder_groups:
-                stakeholder_context += f"- {group.get('name', 'Unbenannt')} ({group.get('type', 'Unbekannt')}): "
-                stakeholder_context += f"Macht={group.get('power_level', '?')}, Interesse={group.get('interest_level', '?')}, "
-                stakeholder_context += f"Position={group.get('mendelow_quadrant', '?')}\n"
+                stakeholder_context += f"- {group.get('name', labels['unnamed'])} ({group.get('type', labels['unknown'])}): "
+                stakeholder_context += f"{labels['power']}={group.get('power_level', '?')}, {labels['interest']}={group.get('interest_level', '?')}, "
+                stakeholder_context += f"{labels['position']}={group.get('mendelow_quadrant', '?')}\n"
 
         # Build impulse context
         impulse_context = ""
         if impulse_summaries:
-            impulse_context = "\nImpulse-Uebersicht (letzte Bewertungen):\n"
+            impulse_context = f"\n{sections['impulse_overview']}\n"
             for summary in impulse_summaries:
-                group_name = summary.get('group_name', 'Unbekannt')
+                group_name = summary.get('group_name', labels['unknown'])
                 avg = summary.get('average_rating')
                 trend = summary.get('trend', '')
-                trend_symbol = '(aufwaerts)' if trend == 'up' else '(abwaerts)' if trend == 'down' else '(stabil)'
+                trend_symbol = labels['trend_up'] if trend == 'up' else labels['trend_down'] if trend == 'down' else labels['trend_stable']
                 count = summary.get('assessment_count', 0)
 
                 if avg is not None:
-                    impulse_context += f"- {group_name}: Durchschnitt {avg:.1f} {trend_symbol}, {count} Bewertungen\n"
+                    impulse_context += f"- {group_name}: {labels['average']} {avg:.1f} {trend_symbol}, {count} {labels['assessments']}\n"
 
                     # List weak indicators
                     weak_indicators = summary.get('weak_indicators', [])
                     if weak_indicators:
                         for indicator in weak_indicators[:3]:
-                            impulse_context += f"  * Schwach: {indicator.get('name', 'Unbekannt')} ({indicator.get('rating', '?')})\n"
+                            impulse_context += f"  * {labels['weak']}: {indicator.get('name', labels['unknown'])} ({indicator.get('rating', '?')})\n"
 
         # Build recommendations context
         recommendations_context = ""
         if recommendations:
-            recommendations_context = "\nHandlungsempfehlungen:\n"
-            status_groups = {}
+            recommendations_context = f"\n{sections['recommendations']}\n"
+            status_groups_dict = {}
             for rec in recommendations:
                 status = rec.get('status', 'unknown')
-                if status not in status_groups:
-                    status_groups[status] = []
-                status_groups[status].append(rec)
+                if status not in status_groups_dict:
+                    status_groups_dict[status] = []
+                status_groups_dict[status].append(rec)
 
-            for status, recs in status_groups.items():
-                status_label = {
-                    'pending_approval': 'Warten auf Freigabe',
-                    'approved': 'Freigegeben',
-                    'started': 'In Umsetzung',
-                    'completed': 'Abgeschlossen',
-                    'rejected': 'Abgelehnt'
-                }.get(status, status)
-                recommendations_context += f"- {status_label}: {len(recs)} Empfehlungen\n"
+            for status, recs in status_groups_dict.items():
+                status_label = status_labels.get(status, status)
+                recommendations_context += f"- {status_label}: {len(recs)} recommendations\n"
                 for rec in recs[:2]:  # Show first 2 per status
-                    recommendations_context += f"  * {rec.get('title', 'Unbekannt')} ({rec.get('priority', '?')} Prioritaet)\n"
+                    recommendations_context += f"  * {rec.get('title', labels['unknown'])} ({rec.get('priority', '?')} {labels['priority_label']})\n"
 
         # Build existing insights context (for duplicate avoidance)
         existing_insights_context = ""
         if existing_insights:
-            existing_insights_context = "\nBereits generierte Insights (NICHT wiederholen):\n"
+            existing_insights_context = f"\n{sections['existing_insights']}\n"
             for insight in existing_insights:
-                existing_insights_context += f"- [{insight.get('insight_type', '?')}] {insight.get('title', 'Unbekannt')}\n"
+                existing_insights_context += f"- [{insight.get('insight_type', '?')}] {insight.get('title', labels['unknown'])}\n"
                 if insight.get('content'):
-                    existing_insights_context += f"  Inhalt: {insight['content']}\n"
+                    existing_insights_context += f"  {sections['content']} {insight['content']}\n"
 
         # Build trigger context
         trigger_prompt = ""
         if trigger_type == "impulse_completed":
             group_id = trigger_context.get("group_id") if trigger_context else None
             if group_id:
-                trigger_prompt = f"\n\nKONTEXT: Ein neuer Impulse wurde gerade fuer Gruppe {group_id} erfasst. Fokussiere dich auf aktuelle Entwicklungen und neue Erkenntnisse aus diesem Feedback."
+                trigger_prompt = "\n\n" + triggers['impulse_completed'].format(group_id=group_id)
         elif trigger_type == "recommendation_completed":
             rec_id = trigger_context.get("recommendation_id") if trigger_context else None
             if rec_id:
-                trigger_prompt = f"\n\nKONTEXT: Eine Handlungsempfehlung wurde gerade abgeschlossen (ID: {rec_id}). Analysiere den Erfolg und identifiziere moegliche Folge-Insights."
+                trigger_prompt = "\n\n" + triggers['recommendation_completed'].format(rec_id=rec_id)
 
-        # Build user message
-        project_display_name = project_name or "Change-Projekt"
-        user_message = f"""Analysiere die folgenden Projektdaten und generiere EINEN wertvollen Insight:
+        # Build user message from template
+        project_display_name = project_name or labels['default_project']
+        user_message = user_message_template.format(
+            project_name=project_display_name,
+            project_goal=project_goal or labels['not_defined'],
+            stakeholder_context=stakeholder_context if stakeholder_context else labels['not_defined'],
+            impulse_context=impulse_context if impulse_context else labels['not_defined'],
+            recommendations_context=recommendations_context if recommendations_context else labels['not_defined'],
+            existing_insights_context=existing_insights_context if existing_insights_context else labels['not_defined'],
+            trigger_prompt=trigger_prompt
+        )
 
-=== PROJEKTKONTEXT ===
-Projektname: {project_display_name}
-Projektziel: {project_goal or 'Nicht definiert'}
-
-=== STAKEHOLDER-GRUPPEN ===
-{stakeholder_context if stakeholder_context else 'Keine Stakeholder-Gruppen definiert.'}
-
-=== STAKEHOLDER-FEEDBACK (IMPULSE) ===
-{impulse_context if impulse_context else 'Noch kein Feedback erfasst.'}
-
-=== HANDLUNGSEMPFEHLUNGEN ===
-{recommendations_context if recommendations_context else 'Keine Empfehlungen vorhanden.'}
-
-=== BEREITS EXISTIERENDE INSIGHTS ===
-{existing_insights_context if existing_insights_context else 'Keine bisherigen Insights vorhanden.'}
-{trigger_prompt}
-
-=== AUFGABE ===
-Generiere EINEN gezielten, datenbasierten Insight mit 2-3 konkreten Handlungsvorschlaegen.
-Der Insight soll auf den tatsaechlichen Daten basieren und zu konkreten Aktionen inspirieren.
-
-WICHTIG: Vermeide Duplikate! Der neue Insight muss sich inhaltlich von den bereits existierenden unterscheiden.
-Finde einen neuen Blickwinkel, eine andere Stakeholder-Gruppe oder ein bisher unentdecktes Muster.
-
-Bei related_groups und related_recommendations: Verwende die tatsaechlichen IDs aus dem Kontext."""
-
-        # Build system prompt
-        system_message = INSIGHTS_SYSTEM_PROMPT + INSIGHTS_JSON_FORMAT
+        # Build system prompt from localized prompts
+        system_prompt = load_prompt("insights", "system")
+        json_format = load_prompt("insights", "json_format")
+        system_message = system_prompt + json_format
 
         # Use direct message list instead of ChatPromptTemplate to avoid escaping issues
         messages = [

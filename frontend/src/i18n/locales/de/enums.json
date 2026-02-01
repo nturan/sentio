@@ -50,11 +50,26 @@
         }
     },
     "recommendationStatus": {
-        "pending_approval": "Ausstehend",
-        "approved": "Genehmigt",
-        "rejected": "Abgelehnt",
-        "started": "Gestartet",
-        "completed": "Abgeschlossen"
+        "pending_approval": {
+            "label": "Ausstehend",
+            "icon": "⏳"
+        },
+        "approved": {
+            "label": "Genehmigt",
+            "icon": "✅"
+        },
+        "rejected": {
+            "label": "Abgelehnt",
+            "icon": "❌"
+        },
+        "started": {
+            "label": "Gestartet",
+            "icon": "🚀"
+        },
+        "completed": {
+            "label": "Abgeschlossen",
+            "icon": "🎉"
+        }
     },
     "priority": {
         "high": "Hoch",

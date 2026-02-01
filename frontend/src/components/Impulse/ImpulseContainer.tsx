@@ -1,5 +1,6 @@
 import { useEffect, useState, Fragment } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { Zap, Plus, RefreshCw, X, ClipboardCheck, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useStakeholder } from '../../context/StakeholderContext';
 import { useRefresh, useRefreshSignal } from '../../context/RefreshContext';
@@ -10,19 +11,6 @@ import type { StakeholderGroup, StakeholderGroupWithAssessments, CreateStakehold
 import { getImpulseHistory, getStakeholderGroup, batchAddAssessmentsWithDate } from '../../services/api';
 import { GROUP_TYPE_INFO } from '../../types/stakeholder';
 
-// Indicator name mapping
-const INDICATOR_NAMES: Record<string, string> = {
-    'orientierung_sinn': 'Orientierung & Sinn',
-    'psychologische_sicherheit': 'Psychologische Sicherheit',
-    'empowerment': 'Empowerment',
-    'partizipation': 'Partizipation',
-    'wertschaetzung': 'Wertschaetzung',
-    'ressourcenfreigabe': 'Ressourcenfreigabe',
-    'aktive_kommunikation': 'Aktive Kommunikation',
-    'widerstandsmanagement': 'Widerstandsmanagement',
-    'vorbildfunktion': 'Vorbildfunktion',
-};
-
 interface ImpulseContainerProps {
     projectId: string;
 }
@@ -30,7 +18,7 @@ interface ImpulseContainerProps {
 // Historical assessment entry for the list
 interface HistoricalAssessment {
     groupId: string;
-    groupName: string;
+    groupName: string | null;
     groupType: string;
     date: string;
     averageRating: number;
@@ -40,6 +28,8 @@ interface HistoricalAssessment {
 }
 
 export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
+    const { t } = useTranslation('impulse');
+    const { t: tEnums } = useTranslation('enums');
     const { groups, isLoading, loadGroups } = useStakeholder();
     const { triggerRefresh } = useRefresh();
     const impulsesRefreshSignal = useRefreshSignal('impulses');
@@ -119,6 +109,12 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
         }
     };
 
+    // Helper to get translated group name
+    const getGroupName = (groupName: string | null, groupType: string) => {
+        if (groupName) return groupName;
+        return tEnums(`stakeholderTypes.${groupType}.name`, { defaultValue: groupType });
+    };
+
     // Build historical assessments list from all impulse histories
     const allHistoricalAssessments: HistoricalAssessment[] = [];
     for (const group of groups) {
@@ -127,7 +123,7 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
             for (const impulse of history.impulses) {
                 allHistoricalAssessments.push({
                     groupId: group.id,
-                    groupName: group.name || GROUP_TYPE_INFO[group.group_type]?.name || group.group_type,
+                    groupName: group.name || null,
                     groupType: group.group_type,
                     date: impulse.date,
                     averageRating: impulse.average_rating,
@@ -143,7 +139,8 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr);
-        return date.toLocaleDateString('de-DE', {
+        const locale = import.meta.env.VITE_LOCALE === 'de' ? 'de-DE' : 'en-US';
+        return date.toLocaleDateString(locale, {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
@@ -158,7 +155,7 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Zap className="text-yellow-500" size={24} />
-                            <h1 className="text-2xl font-bold text-gray-800">Impulse</h1>
+                            <h1 className="text-2xl font-bold text-gray-800">{t('title')}</h1>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -174,14 +171,14 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                                 className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <Plus size={16} />
-                                Neuer Impuls
+                                {t('newImpulse')}
                             </button>
                         </div>
                     </div>
 
                     {/* Description */}
                     <p className="text-sm text-gray-600">
-                        Erfassen Sie regelmaessig Impulse zu Ihren Stakeholder-Gruppen, um die Entwicklung im Change-Prozess zu verfolgen.
+                        {t('description')}
                     </p>
 
                     {/* Loading State */}
@@ -192,19 +189,19 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                     ) : groups.length === 0 ? (
                         <div className="text-center py-20">
                             <Zap size={48} className="mx-auto text-gray-300 mb-4" />
-                            <h2 className="text-lg font-medium text-gray-700 mb-2">Noch keine Stakeholder-Gruppen</h2>
+                            <h2 className="text-lg font-medium text-gray-700 mb-2">{t('noGroups.title')}</h2>
                             <p className="text-sm text-gray-500">
-                                Erstellen Sie zuerst Stakeholder-Gruppen im Stakeholder-Tab, um Impulse erfassen zu koennen.
+                                {t('noGroups.description')}
                             </p>
                         </div>
                     ) : (
                         <>
                             {/* Historical Assessments List */}
                             <div className="space-y-4">
-                                <h2 className="text-lg font-semibold text-gray-700">Alle Impulse</h2>
+                                <h2 className="text-lg font-semibold text-gray-700">{t('allImpulses')}</h2>
                                 {allHistoricalAssessments.length === 0 ? (
                                     <div className="bg-gray-50 rounded-lg p-6 text-center">
-                                        <p className="text-sm text-gray-500">Noch keine Impulse erfasst</p>
+                                        <p className="text-sm text-gray-500">{t('noImpulses')}</p>
                                     </div>
                                 ) : (
                                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -212,11 +209,11 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                                             <thead className="bg-gray-50 border-b border-gray-200">
                                                 <tr>
                                                     <th className="w-8 px-2"></th>
-                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Datum</th>
-                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gruppe</th>
-                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Typ</th>
-                                                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Durchschnitt</th>
-                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quelle</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('table.date')}</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('table.group')}</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('table.type')}</th>
+                                                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('table.average')}</th>
+                                                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('table.source')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
@@ -244,11 +241,11 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                                                                 <td className="px-4 py-3 text-sm text-gray-900">
                                                                     <div className="flex items-center gap-2">
                                                                         <span>{typeInfo?.icon || '👤'}</span>
-                                                                        <span>{assessment.groupName}</span>
+                                                                        <span>{getGroupName(assessment.groupName, assessment.groupType)}</span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-sm text-gray-500">
-                                                                    {typeInfo?.name || assessment.groupType}
+                                                                    {tEnums(`stakeholderTypes.${assessment.groupType}.name`, { defaultValue: assessment.groupType })}
                                                                 </td>
                                                                 <td className="px-4 py-3 text-sm text-right">
                                                                     <span className={`font-semibold ${
@@ -263,12 +260,12 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                                                                     {assessment.source === 'survey' ? (
                                                                         <span className="inline-flex items-center gap-1 text-purple-600">
                                                                             <FileText size={14} />
-                                                                            Umfrage
+                                                                            {t('source.survey')}
                                                                         </span>
                                                                     ) : (
                                                                         <span className="inline-flex items-center gap-1 text-blue-600">
                                                                             <ClipboardCheck size={14} />
-                                                                            Manuell
+                                                                            {t('source.manual')}
                                                                         </span>
                                                                     )}
                                                                 </td>
@@ -279,11 +276,11 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                                                                     <td colSpan={6} className="px-4 py-4">
                                                                         <div className="pl-6">
                                                                             <h4 className="text-sm font-medium text-gray-700 mb-3">
-                                                                                Bewertungen im Detail
+                                                                                {t('details.title')}
                                                                             </h4>
                                                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                                                                 {indicatorEntries.map(([key, rating]) => {
-                                                                                    const indicatorName = INDICATOR_NAMES[key] || key;
+                                                                                    const indicatorName = t(`indicators.${key}`, { defaultValue: key });
                                                                                     const note = assessment.notes[key];
                                                                                     return (
                                                                                         <div
@@ -324,7 +321,7 @@ export function ImpulseContainer({ projectId }: ImpulseContainerProps) {
                                                                             </div>
                                                                             {indicatorEntries.length === 0 && (
                                                                                 <p className="text-sm text-gray-500 italic">
-                                                                                    Keine Einzelbewertungen verfuegbar
+                                                                                    {t('details.noRatings')}
                                                                                 </p>
                                                                             )}
                                                                         </div>
@@ -386,6 +383,9 @@ interface GroupSelectorModalProps {
 }
 
 function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }: GroupSelectorModalProps) {
+    const { t } = useTranslation('impulse');
+    const { t: tCommon } = useTranslation('common');
+    const { t: tEnums } = useTranslation('enums');
     const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
     const selectedGroup = selectedGroupId ? groups.find(g => g.id === selectedGroupId) : null;
@@ -425,7 +425,7 @@ function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }:
             >
                 {/* Header */}
                 <div style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937' }}>Neuer Impuls</h2>
+                    <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1f2937' }}>{t('newImpulse')}</h2>
                     <button
                         onClick={onClose}
                         style={{ padding: '8px', borderRadius: '8px', border: 'none', background: 'transparent', cursor: 'pointer' }}
@@ -437,7 +437,7 @@ function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }:
                 {/* Content */}
                 <div style={{ padding: '16px 24px', overflowY: 'auto', flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '12px' }}>
-                        Stakeholder-Gruppe waehlen
+                        {t('selectGroup')}
                     </label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {groups.map(group => {
@@ -463,10 +463,10 @@ function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }:
                                     <span style={{ fontSize: '24px', flexShrink: 0 }}>{typeInfo?.icon || '👤'}</span>
                                     <div style={{ minWidth: 0 }}>
                                         <p style={{ fontWeight: 500, color: '#1f2937', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {group.name || typeInfo?.name}
+                                            {group.name || tEnums(`stakeholderTypes.${group.group_type}.name`)}
                                         </p>
                                         <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {typeInfo?.subtitle} | {group.mendelow_quadrant}
+                                            {tEnums(`stakeholderTypes.${group.group_type}.subtitle`)} | {group.mendelow_quadrant}
                                         </p>
                                     </div>
                                 </button>
@@ -477,7 +477,7 @@ function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }:
                     {/* Action Selection (when group is selected) */}
                     {selectedGroup && (
                         <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
-                            <p style={{ fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '12px' }}>Aktion waehlen:</p>
+                            <p style={{ fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '12px' }}>{t('selectAction')}</p>
                             <div style={{ display: 'flex', gap: '8px' }}>
                                 <button
                                     onClick={() => onSelectManual(selectedGroup.id)}
@@ -498,7 +498,7 @@ function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }:
                                     }}
                                 >
                                     <ClipboardCheck size={18} />
-                                    Manuelle Bewertung
+                                    {t('manualAssessment')}
                                 </button>
                                 {canCreateSurvey && (
                                     <button
@@ -520,7 +520,7 @@ function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }:
                                         }}
                                     >
                                         <FileText size={18} />
-                                        Umfrage erstellen
+                                        {t('createSurvey')}
                                     </button>
                                 )}
                             </div>
@@ -543,7 +543,7 @@ function GroupSelectorModal({ groups, onSelectManual, onSelectSurvey, onClose }:
                             cursor: 'pointer',
                         }}
                     >
-                        Abbrechen
+                        {tCommon('buttons.cancel')}
                     </button>
                 </div>
             </div>

@@ -1,0 +1,408 @@
+core_indicators:
+  - key: orientierung_sinn
+    name: Orientation & Purpose
+    description: A clear project vision provides orientation and fosters intrinsic motivation by showing the deeper value of the work.
+  - key: psychologische_sicherheit
+    name: Psychological Safety
+    description: An open error culture and the courage for dissenting opinions form the basis for trust and peak performance in the team.
+  - key: empowerment
+    name: Empowerment
+    description: True enablement doesn't just delegate tasks, but transfers real decision-making authority, time, and autonomy to the experts in the team.
+  - key: partizipation
+    name: Participation
+    description: Through transparency and active involvement, those affected become co-creators, which reduces resistance and increases acceptance.
+  - key: wertschaetzung
+    name: Appreciation
+    description: Empathetic handling of individual needs and targeted recognition strengthen commitment and support in the change process.
+
+fuehrungskraefte_indicators:
+  - key: ressourcenfreigabe
+    name: Resource Release
+    description: They assign their best people to the project, not just those who are currently 'available'.
+  - key: aktive_kommunikation
+    name: Active Communication
+    description: Leaders translate project goals into the language of their own department.
+  - key: widerstandsmanagement
+    name: Resistance Management
+    description: They intercept concerns from their employees and resolve conflicts proactively, instead of delegating them to the project team.
+  - key: vorbildfunktion
+    name: Role Model Function
+    description: They use new tools or processes first (early adopters).
+
+stakeholder_group_types:
+  fuehrungskraefte:
+    name: Leadership (Middle Management)
+    description: Leaders are assessed based on 4 specific indicators.
+  multiplikatoren:
+    name: Multipliers (Change Manager/Staff)
+    description: Change managers and staff members who actively drive the change.
+  mitarbeitende:
+    name: Employees (Those Affected)
+    description: Employees are assessed through surveys.
+
+mendelow_quadrants:
+  high_high:
+    name: Key Players
+    strategy: Engage closely and actively manage
+  high_low:
+    name: Keep Satisfied
+    strategy: Keep satisfied, inform regularly
+  low_high:
+    name: Keep Informed
+    strategy: Keep well informed
+  low_low:
+    name: Monitor
+    strategy: Monitor with minimal effort
+
+# Seed data - Session titles and conversations
+session_titles:
+  - Stakeholder Analysis
+  - Project Planning
+  - Resistance Management
+  - Communication Strategy
+  - Impulse Assessment
+  - Quick-Win Ideas
+  - Leadership Engagement
+  - Employee Feedback
+
+conversations:
+  - # Conversation 1: Stakeholder analysis
+    - role: user
+      content: "How can I improve stakeholder acceptance for our change project?"
+    - role: assistant
+      content: |
+        To improve stakeholder acceptance, I recommend a three-step approach:
+
+        1. **Stakeholder Mapping**: First identify all relevant stakeholders and place them in the Mendelow Matrix (Power vs. Interest).
+
+        2. **Individual Approach**: Develop a customized communication strategy for each stakeholder group.
+
+        3. **Early Involvement**: Involve critical stakeholders early in decision-making processes.
+
+        Would you like me to create a specific action plan for a particular stakeholder group?
+    - role: user
+      content: "Yes, please for the middle management leaders."
+    - role: assistant
+      content: |
+        For middle management leaders, I recommend the following measures:
+
+        **Short-term (this week):**
+        - Conduct personal conversations with key leaders
+        - Actively ask about concerns and expectations
+
+        **Medium-term (2-4 weeks):**
+        - Leadership workshop for role clarification
+        - Clear communication of benefits for their teams
+        - Set up regular briefings
+
+        **Long-term:**
+        - Deploy leaders as change ambassadors
+        - Make successes visible and acknowledge them
+
+        Should I go into detail on any of these points?
+
+  - # Conversation 2: Resistance management
+    - role: user
+      content: "We have strong resistance from employees. What can we do?"
+    - role: assistant
+      content: |
+        Resistance is a normal part of any change process and often a sign that the change is perceived as relevant. Here are proven strategies:
+
+        **1. Understand resistance:**
+        - Conduct anonymous surveys
+        - Seek individual conversations
+        - Identify the causes (fear, uncertainty, loss of control?)
+
+        **2. Communicate actively:**
+        - Clearly explain the 'why'
+        - Be honest about challenges
+        - Provide regular updates
+
+        **3. Enable participation:**
+        - Involve those affected in decisions
+        - Establish feedback channels
+        - Create quick wins
+
+        What do you think is the main reason for the resistance?
+    - role: user
+      content: "Employees are afraid of job losses due to digitalization."
+    - role: assistant
+      content: |
+        This is a very common and understandable concern. Here are specific recommendations:
+
+        **Immediate measures:**
+        1. **Clear commitment from management** to job guarantees (if possible)
+        2. **Town hall meeting** with Q&A session on this topic
+
+        **Qualification offensive:**
+        1. **Competency analysis**: What skills will be needed in the future?
+        2. **Develop and announce training programs**
+        3. **Show career paths** - how work changes, not whether it disappears
+
+        **Communication:**
+        - Share success stories of employees who have developed
+        - Inform transparently about new roles and tasks
+
+        Would you like me to create a communication plan for this topic?
+
+  - # Conversation 3: Quick wins
+    - role: user
+      content: "We need quick wins to maintain momentum."
+    - role: assistant
+      content: |
+        Quick wins are crucial for motivation. Here are some proven ideas:
+
+        **Immediately implementable (1-2 weeks):**
+        - Start first pilot group with new tools
+        - Communicate success story internally
+        - Small thank-you event for engaged employees
+
+        **Short-term (2-4 weeks):**
+        - Solve a specific problem that affects many
+        - Implement an employee's improvement suggestion
+        - Share positive customer feedback
+
+        Important: Quick wins should be **visible** and **relevant** to those affected.
+
+        Which area would you like to prioritize?
+
+  - # Conversation 4: Assessment discussion
+    - role: user
+      content: "The latest impulse assessments show a decline in Psychological Safety. What does this mean?"
+    - role: assistant
+      content: |
+        A decline in Psychological Safety is an important warning sign that can indicate several causes:
+
+        **Possible causes:**
+        - Increased pressure from project milestones
+        - Criticism was received negatively
+        - Mistakes were publicly discussed
+        - Uncertainty about the future
+
+        **Recommended measures:**
+        1. **Root cause analysis**: Conduct confidential conversations with team members
+        2. **Sensitize leaders**: Training on psychological safety
+        3. **Strengthen error culture**: 'Lessons Learned' instead of blame
+        4. **Introduce retrospectives**: Safe spaces for open feedback
+
+        Should I create a detailed action plan for your team?
+    - role: user
+      content: "Yes please, and how do we measure success?"
+    - role: assistant
+      content: |
+        **Action Plan Psychological Safety:**
+
+        **Week 1-2:**
+        - Confidential 1:1 conversations (manager with each team member)
+        - Team retrospective with external moderator
+
+        **Week 3-4:**
+        - Leadership workshop 'Psychological Safety'
+        - Introduction of anonymous feedback tool
+
+        **Ongoing:**
+        - Weekly 'Fail Forward' round in the team
+        - Monthly check-ins
+
+        **Success measurement:**
+        1. **Quantitative:**
+           - Impulse assessment every 2 weeks
+           - Goal: Increase by 1-2 points in 8 weeks
+           - Participation in team events
+
+        2. **Qualitative:**
+           - Number of ideas/concerns raised in meetings
+           - Openness in retrospectives
+           - Feedback in 1:1s
+
+        Would you like to plan the first retrospective?
+
+# Seed data - Stakeholder group names
+group_names:
+  fuehrungskraefte:
+    - Sales Division Leadership
+    - IT Team Lead
+    - Finance Department Head
+    - Production Division Leadership
+    - HR Team Lead
+    - Marketing Department Head
+  multiplikatoren:
+    - Change Agents Team A
+    - Communications Team
+    - Project Coordinators
+    - Key User Group
+    - Change Champions
+    - Ambassador Network
+  mitarbeitende:
+    - Sales Representatives (Inside Sales)
+    - Accounting Clerks
+    - Call Center Consultants
+    - Production Workers Plant 1
+    - Administrative Staff
+    - Technical Support
+
+# Seed data - Assessment notes
+assessment_notes:
+  orientierung_sinn:
+    - Vision was presented at town hall, still questions open
+    - Clear communication of goals, but implementation unclear
+    - Employees understand the benefits but see risks
+    - Positive response after goal communication workshop
+  psychologische_sicherheit:
+    - Team doesn't yet dare to express concerns
+    - First positive signs after open error culture initiative
+    - Trust is slowly growing through regular retrospectives
+    - Still hesitation with critical feedback
+  empowerment:
+    - Decision-making authority not yet clearly defined
+    - First pilot teams with extended autonomy show good results
+    - Resources are increasingly being provided
+    - Training for self-responsible work is ongoing
+  partizipation:
+    - Feedback rounds have been introduced
+    - Employees want more involvement
+    - Idea workshops show high participation
+    - Transparency in decisions has improved
+  wertschaetzung:
+    - Recognition for project contributions has been increased
+    - Individual needs are better considered
+    - Regular praise in team meetings established
+    - Employee events for appreciation planned
+  ressourcenfreigabe:
+    - Budget approved, personnel still scarce
+    - Best people are being assigned
+    - Time release for project work ensured
+    - Resource conflicts with daily business
+  aktive_kommunikation:
+    - Leaders translate goals into their department
+    - Regular updates to teams
+    - Communication quality varies greatly
+    - Cascade communication working better
+  widerstandsmanagement:
+    - Concerns are addressed early
+    - Conflict resolution approached proactively
+    - Still escalations to project team
+    - Training for dealing with resistance conducted
+  vorbildfunktion:
+    - Leaders actively use new tools
+    - Modeling new behaviors visible
+    - Not all leaders on board yet
+    - Early adopters among team leaders
+
+# Seed data - Recommendation templates
+recommendation_templates:
+  habit:
+    - title: Daily 5-Minute Standup
+      description: A short daily standup meeting promotes communication and transparency in the team. It helps identify blockers early and strengthens team cohesion.
+      steps:
+        - Set time slot (e.g., 9:00 AM)
+        - Introduce fixed 3 questions - What did I achieve yesterday? What am I doing today? What's blocking me?
+        - Designate timekeeper (rotating)
+        - Gather feedback and adjust after 2 weeks
+    - title: Weekly Success Reflection
+      description: Teams reflect weekly on their successes and progress. This strengthens positive perception of the change and motivates the team.
+      steps:
+        - Schedule 15 minutes on Fridays
+        - Each team member shares one success of the week
+        - Document successes visually (e.g., success board)
+        - Celebrate biggest successes monthly
+  communication:
+    - title: Transparency Newsletter
+      description: A regular newsletter informs all affected parties about progress, decisions, and next steps. This reduces rumors and strengthens trust.
+      steps:
+        - Designate editorial team
+        - Set publication rhythm (e.g., every 2 weeks)
+        - Define fixed sections - Highlights, Decisions, FAQ, Dates
+        - Set up feedback channel
+    - title: Establish Leadership Briefing
+      description: Regular briefings for leaders ensure they can convey messages correctly to their teams.
+      steps:
+        - Weekly 30-minute format
+        - Prepare talking points
+        - Plan Q&A session
+        - Collect feedback from teams
+  workshop:
+    - title: Change Fitness Training
+      description: A workshop to strengthen individual change competence. Participants learn to deal with uncertainty and actively shape change.
+      steps:
+        - Identify external trainers
+        - Select pilot group
+        - Plan half-day format
+        - Define transfer tasks
+        - Follow-up session after 4 weeks
+    - title: Stakeholder Alignment Workshop
+      description: A moderated workshop to align expectations and goals between different stakeholder groups.
+      steps:
+        - Identify key stakeholders
+        - Conduct preparatory interviews
+        - Plan full-day workshop
+        - Develop joint roadmap
+        - Document commitment
+  process:
+    - title: Establish Feedback Loops
+      description: Systematic feedback processes enable quick learning and adaptation. Those affected become co-creators.
+      steps:
+        - Define feedback channels (digital + analog)
+        - Commit to quick response times (<48h)
+        - Set up feedback dashboard
+        - Monthly feedback evaluation
+    - title: Decision Delegation Matrix
+      description: Clear definition of which decisions are made at which level. This accelerates processes and strengthens empowerment.
+      steps:
+        - Identify decision categories
+        - Set delegation levels
+        - Visualize and communicate matrix
+        - Quarterly review
+  campaign:
+    - title: Quick-Win Campaign
+      description: Focused campaign to achieve quick, visible successes. These strengthen trust in the change process.
+      steps:
+        - Identify 3-5 quick wins
+        - Designate responsible parties
+        - Plan 4-week sprint
+        - Communicate successes prominently
+    - title: Change Ambassador Program
+      description: Training and activation of change ambassadors in all areas who serve as multipliers and contact persons.
+      steps:
+        - Recruit volunteer ambassadors
+        - Develop training program
+        - Regular ambassador meetings
+        - Provide resources and tools
+        - Recognize ambassador successes
+
+# Seed data - Rejection reasons
+rejection_reasons:
+  - Too much time required for current project phase
+  - Insufficient budget
+  - Other priorities in current sprint
+  - Stakeholder acceptance questionable
+  - Similar initiative already in planning
+  - Resources not available
+  - Not suitable for our corporate culture
+  - Timing unfavorable - review again after year-end closing
+
+# Seed data scenarios
+scenarios:
+  new:
+    description: Fresh project without history (3 days old)
+    project_name: New Change Project
+    project_goal: Goal to be defined
+    session_title: New Chat
+  3month:
+    description: 3-month project with initial impulses and actions
+    project_name: Agile Transformation Sales
+    project_goal: Introduction of agile working methods in all sales teams by Q4
+  6month:
+    description: 6-month project with substantial history
+    project_name: Digital Transformation 2026
+    project_goal: Increase customer satisfaction by 20% through improved digital services
+  10month:
+    description: 10-month project with complex history and active crisis
+    project_name: ERP System Implementation
+    project_goal: Successful migration of all business processes to the new ERP system
+    extra_group_name: Production Employees Plant 2
+    notes: >
+      This project shows a typical crisis situation:
+      The original employee group shows declining values (intervention needed),
+      while a later-added group shows positive development through better management.
+      Leadership is volatile - inconsistent support.

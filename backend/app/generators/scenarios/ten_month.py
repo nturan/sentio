@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from ..scenario_base import ScenarioGenerator
 from ...factories import StakeholderGroupFactory, StakeholderAssessmentFactory
 from ..rating_patterns import RatingPatternGenerator
+from ...prompts import load_constants
 
 
 class TenMonthScenario(ScenarioGenerator):
@@ -27,7 +28,7 @@ class TenMonthScenario(ScenarioGenerator):
     """
 
     SCENARIO_NAME = "10month"
-    SCENARIO_DESCRIPTION = "10-Monats-Projekt mit komplexer Historie und aktiver Krise"
+    SCENARIO_DESCRIPTION = "10-month project with complex history and active crisis"
     PROJECT_AGE_DAYS = 300
     NUM_IMPULSES = 22
     NUM_RECOMMENDATIONS = 18
@@ -38,6 +39,10 @@ class TenMonthScenario(ScenarioGenerator):
         """Generate a 10-month project scenario."""
         from ...constants import get_indicators_for_group_type
 
+        # Load localized scenario data
+        scenarios = load_constants("scenarios")
+        scenario_data = scenarios["10month"]
+
         result = {
             "scenario": cls.SCENARIO_NAME,
             "project": None,
@@ -47,11 +52,11 @@ class TenMonthScenario(ScenarioGenerator):
             "sessions": [],
         }
 
-        # Create the project
+        # Create the project with localized name and goal
         project = cls.create_project(
             conn,
-            name="ERP-Systemeinführung",
-            goal="Erfolgreiche Migration aller Geschäftsprozesse auf das neue ERP-System",
+            name=scenario_data["project_name"],
+            goal=scenario_data["project_goal"],
             days_ago=cls.PROJECT_AGE_DAYS,
         )
         result["project"] = project
@@ -75,7 +80,7 @@ class TenMonthScenario(ScenarioGenerator):
             conn,
             project_id=project["id"],
             group_type="mitarbeitende",
-            name="Produktionsmitarbeiter Werk 2",
+            name=scenario_data["extra_group_name"],
             power_level="low",
             interest_level="high",  # Keep Informed - higher interest
             created_at=StakeholderGroupFactory.generate_timestamp(days_ago=150),
@@ -169,12 +174,7 @@ class TenMonthScenario(ScenarioGenerator):
 
         # Add summary with extra context about the crisis
         summary = cls.get_summary(result)
-        summary["notes"] = (
-            "Dieses Projekt zeigt eine typische Krisensituation: "
-            "Die ursprüngliche Mitarbeitergruppe zeigt fallende Werte (Intervention nötig), "
-            "während eine später hinzugefügte Gruppe durch besseres Management positive Entwicklung zeigt. "
-            "Führungskräfte sind volatil - inkonsistente Unterstützung."
-        )
+        summary["notes"] = scenario_data["notes"]
         result["summary"] = summary
 
         return result

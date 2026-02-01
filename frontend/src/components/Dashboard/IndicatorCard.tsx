@@ -1,4 +1,5 @@
 import { Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface IndicatorCardProps {
     name: string;
@@ -10,6 +11,7 @@ interface IndicatorCardProps {
 }
 
 export function IndicatorCard({ name, description, latestRating, previousRating, ratingCount }: IndicatorCardProps) {
+    const { t } = useTranslation('dashboard');
     const hasData = ratingCount > 0 && latestRating !== null;
 
     // Convert latest rating (1-10) to percentage (10-100%)
@@ -50,7 +52,7 @@ export function IndicatorCard({ name, description, latestRating, previousRating,
                             {displayPercent}%
                         </span>
                         <p className="text-xs text-gray-500 mt-1">
-                            {ratingCount} Bewertung{ratingCount !== 1 ? 'en' : ''}
+                            {t('indicators.ratingCount', { count: ratingCount })}
                         </p>
                         {/* Change indicator */}
                         {hasChange && (
@@ -78,7 +80,7 @@ export function IndicatorCard({ name, description, latestRating, previousRating,
                     <>
                         <span className="text-2xl font-bold text-gray-300">--</span>
                         <p className="text-xs text-gray-400 mt-1">
-                            Keine Daten
+                            {t('indicators.noData')}
                         </p>
                     </>
                 )}

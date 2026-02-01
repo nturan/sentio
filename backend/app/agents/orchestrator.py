@@ -4,6 +4,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
 from typing import List
 from .knowledge import KnowledgeAgent
+from ..prompts import load_prompt
 
 class ActionItem(BaseModel):
     title: str = Field(description="The actionable step title")
@@ -18,21 +19,17 @@ class OrchestratorAgent:
     def __init__(self, knowledge_agent: KnowledgeAgent):
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
         self.knowledge_agent = knowledge_agent
-        
+
         self.parser = JsonOutputParser(pydantic_object=Plan)
-        
+
+        # Load system prompt from localized prompts
+        system_prompt_template = load_prompt("orchestrator", "system")
+
         self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are the Central Brain of Sentio, an AI Change Management Architect.
-            Task: Break the user goal down into specific, actionable steps following the ADKAR framework (Awareness, Desire, Knowledge, Ability, Reinforcement).
-            
-            Context provided:
-            {context}
-            
-            {format_instructions}
-            """),
+            ("system", system_prompt_template),
             ("human", "User Goal: {goal}")
         ])
-        
+
         self.chain = self.prompt | self.llm | self.parser
 
     async def generate_plan(self, goal: str, project_id: str):

@@ -13,93 +13,17 @@ from ..constants import (
     CORE_INDICATORS,
     FUEHRUNGSKRAEFTE_INDICATORS,
 )
+from ..prompts import load_constants
 
 
-# German stakeholder group names by type
-GROUP_NAMES = {
-    "fuehrungskraefte": [
-        "Bereichsleitung Vertrieb",
-        "Teamleitung IT",
-        "Abteilungsleitung Finanzen",
-        "Bereichsleitung Produktion",
-        "Teamleitung Personal",
-        "Abteilungsleitung Marketing",
-    ],
-    "multiplikatoren": [
-        "Change-Agenten Team A",
-        "Kommunikationsteam",
-        "Projektkoordinatoren",
-        "Key User Gruppe",
-        "Change Champions",
-        "Botschafter-Netzwerk",
-    ],
-    "mitarbeitende": [
-        "Vertriebsmitarbeiter Innendienst",
-        "Sachbearbeitung Buchhaltung",
-        "Kundenberater Callcenter",
-        "Produktionsmitarbeiter Werk 1",
-        "Verwaltungsangestellte",
-        "Technischer Support",
-    ],
-}
+def get_group_names() -> Dict[str, List[str]]:
+    """Load localized stakeholder group names."""
+    return load_constants("group_names")
 
-# Sample notes for assessments per indicator
-ASSESSMENT_NOTES = {
-    "orientierung_sinn": [
-        "Vision wurde im Townhall vorgestellt, noch Fragen offen",
-        "Klare Kommunikation der Ziele, aber Umsetzung unklar",
-        "Mitarbeiter verstehen den Nutzen, aber sehen Risiken",
-        "Positive Resonanz nach Workshop zur Zielvermittlung",
-    ],
-    "psychologische_sicherheit": [
-        "Team traut sich noch nicht, Bedenken zu äußern",
-        "Erste positive Zeichen nach offener Fehlerkultur-Initiative",
-        "Vertrauen wächst langsam durch regelmäßige Retrospektiven",
-        "Noch Zurückhaltung bei kritischem Feedback",
-    ],
-    "empowerment": [
-        "Entscheidungsbefugnisse noch nicht klar definiert",
-        "Erste Pilotteams mit erweiterter Autonomie zeigen gute Ergebnisse",
-        "Ressourcen werden zunehmend bereitgestellt",
-        "Schulungen zur eigenverantwortlichen Arbeit laufen",
-    ],
-    "partizipation": [
-        "Feedback-Runden wurden eingeführt",
-        "Mitarbeitende wünschen sich mehr Einbindung",
-        "Ideenworkshops zeigen hohe Beteiligung",
-        "Transparenz bei Entscheidungen verbessert",
-    ],
-    "wertschaetzung": [
-        "Anerkennung für Projektbeiträge wurde verstärkt",
-        "Individuelle Bedürfnisse werden besser berücksichtigt",
-        "Regelmäßiges Lob im Team-Meeting etabliert",
-        "Mitarbeiter-Events zur Würdigung geplant",
-    ],
-    "ressourcenfreigabe": [
-        "Budget wurde genehmigt, Personal noch knapp",
-        "Beste Leute werden abgestellt",
-        "Zeitliche Freistellung für Projektarbeit gewährleistet",
-        "Ressourcenkonflikte mit Tagesgeschäft",
-    ],
-    "aktive_kommunikation": [
-        "Führungskräfte übersetzen Ziele in ihre Abteilung",
-        "Regelmäßige Updates an Teams",
-        "Kommunikationsqualität variiert stark",
-        "Kaskadenkommunikation funktioniert besser",
-    ],
-    "widerstandsmanagement": [
-        "Bedenken werden früh aufgegriffen",
-        "Konfliktlösung proaktiv angegangen",
-        "Noch Eskalationen an Projektteam",
-        "Training für Umgang mit Widerstand durchgeführt",
-    ],
-    "vorbildfunktion": [
-        "Führungskräfte nutzen neue Tools aktiv",
-        "Vorleben der neuen Verhaltensweisen sichtbar",
-        "Noch nicht alle Führungskräfte an Bord",
-        "Early Adopter unter den Teamleitern",
-    ],
-}
+
+def get_assessment_notes() -> Dict[str, List[str]]:
+    """Load localized assessment notes."""
+    return load_constants("assessment_notes")
 
 
 class StakeholderGroupFactory(BaseFactory):
@@ -118,8 +42,9 @@ class StakeholderGroupFactory(BaseFactory):
         **kwargs
     ) -> Dict[str, Any]:
         """Build a stakeholder group dict without persisting."""
-        group_type = group_type or random.choice(list(GROUP_NAMES.keys()))
-        name = name or random.choice(GROUP_NAMES.get(group_type, ["Unbekannte Gruppe"]))
+        group_names = get_group_names()
+        group_type = group_type or random.choice(list(group_names.keys()))
+        name = name or random.choice(group_names.get(group_type, ["Unknown Group"]))
 
         return {
             "id": cls.generate_id(),
@@ -237,8 +162,9 @@ class StakeholderAssessmentFactory(BaseFactory):
     ) -> Dict[str, Any]:
         """Build an assessment dict without persisting."""
         # Get a random note for this indicator if not provided
-        if notes is None and indicator_key in ASSESSMENT_NOTES:
-            notes = random.choice(ASSESSMENT_NOTES[indicator_key])
+        assessment_notes = get_assessment_notes()
+        if notes is None and indicator_key in assessment_notes:
+            notes = random.choice(assessment_notes[indicator_key])
 
         return {
             "id": cls.generate_id(),

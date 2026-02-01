@@ -50,11 +50,26 @@
         }
     },
     "recommendationStatus": {
-        "pending_approval": "Pending",
-        "approved": "Approved",
-        "rejected": "Rejected",
-        "started": "Started",
-        "completed": "Completed"
+        "pending_approval": {
+            "label": "Pending",
+            "icon": "⏳"
+        },
+        "approved": {
+            "label": "Approved",
+            "icon": "✅"
+        },
+        "rejected": {
+            "label": "Rejected",
+            "icon": "❌"
+        },
+        "started": {
+            "label": "Started",
+            "icon": "🚀"
+        },
+        "completed": {
+            "label": "Completed",
+            "icon": "🎉"
+        }
     },
     "priority": {
         "high": "High",

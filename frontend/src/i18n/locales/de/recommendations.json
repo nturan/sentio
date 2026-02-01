@@ -1,5 +1,27 @@
 {
-    "title": "Handlungen",
+    "title": "Handlungsempfehlungen",
+    "newRecommendation": "Neue Empfehlung generieren",
+    "generateRecommendation": "Empfehlung generieren",
+    "noRecommendations": {
+        "title": "Noch keine Handlungsempfehlungen",
+        "titleFiltered": "Keine Empfehlungen mit Status \"{{status}}\"",
+        "description": "Generieren Sie eine neue Empfehlung basierend auf Ihren Impulsen und Stakeholder-Daten."
+    },
+    "filter": {
+        "all": "Alle",
+        "pending_approval": "Ausstehend",
+        "approved": "Genehmigt",
+        "started": "Gestartet",
+        "completed": "Abgeschlossen",
+        "rejected": "Abgelehnt"
+    },
+    "sections": {
+        "pending_approval": "Ausstehend",
+        "approved": "Genehmigt",
+        "started": "Gestartet",
+        "completed": "Abgeschlossen",
+        "rejected": "Abgelehnt"
+    },
     "actions": {
         "approve": "Genehmigen",
         "reject": "Ablehnen",
@@ -17,5 +39,50 @@
         "started": "Gestartet:",
         "completed": "Abgeschlossen:",
         "reason": "Grund:"
+    },
+    "rejectModal": {
+        "title": "Empfehlung ablehnen",
+        "recommendation": "Empfehlung:",
+        "reasonLabel": "Grund fuer Ablehnung:",
+        "reasonPlaceholder": "z.B. Budget nicht verfuegbar, zeitlich nicht umsetzbar...",
+        "reasonRequired": "Bitte geben Sie einen Grund fuer die Ablehnung ein",
+        "rejecting": "Ablehnen..."
+    },
+    "editModal": {
+        "title": "Empfehlung bearbeiten",
+        "titleLabel": "Titel:",
+        "descriptionLabel": "Beschreibung:",
+        "typeLabel": "Typ:",
+        "priorityLabel": "Prioritaet:",
+        "affectedGroupsLabel": "Betroffene Gruppen:",
+        "stepsLabel": "Konkrete Schritte:",
+        "stepPlaceholder": "Schritt beschreiben...",
+        "addStep": "Schritt hinzufuegen",
+        "titleRequired": "Bitte geben Sie einen Titel ein"
+    },
+    "generatorModal": {
+        "title": "Neue Handlungsempfehlung generieren",
+        "titleRegenerate": "Alternative Empfehlung generieren",
+        "contextTitle": "Kontext fuer KI:",
+        "projectGoal": "Projektziel:",
+        "projectGoalNotDefined": "Nicht definiert",
+        "stakeholderGroups": "Stakeholder-Gruppen:",
+        "rejectionReason": "Ablehnungsgrund:",
+        "focusLabel": "Fokus (optional)",
+        "focusPlaceholder": "z.B. 'Kommunikation verbessern' oder leer lassen",
+        "generateButton": "Empfehlung generieren",
+        "generating": "Generiere Empfehlung...",
+        "generationError": "Fehler bei der Generierung",
+        "generatedTitle": "Generierte Empfehlung (editierbar):",
+        "titleLabel": "Titel:",
+        "descriptionLabel": "Beschreibung:",
+        "typeLabel": "Typ:",
+        "priorityLabel": "Prioritaet:",
+        "affectedGroupsLabel": "Betroffene Gruppen:",
+        "stepsLabel": "Konkrete Schritte:",
+        "stepPlaceholder": "Schritt beschreiben...",
+        "addStep": "Schritt hinzufuegen",
+        "regenerate": "Neu generieren",
+        "titleRequired": "Bitte geben Sie einen Titel ein"
     }
 }

@@ -3,7 +3,10 @@
     "loadFailed": "Failed to load dashboard data",
     "indicators": {
         "title": "Rating Factors",
-        "emptyState": "Add stakeholder groups and perform assessments to see data."
+        "emptyState": "Add stakeholder groups and perform assessments to see data.",
+        "ratingCount": "{{count}} rating",
+        "ratingCount_plural": "{{count}} ratings",
+        "noData": "No data"
     },
     "trend": {
         "title": "Rating Trend",

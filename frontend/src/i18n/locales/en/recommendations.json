@@ -1,5 +1,27 @@
 {
-    "title": "Actions",
+    "title": "Recommendations",
+    "newRecommendation": "Generate new recommendation",
+    "generateRecommendation": "Generate recommendation",
+    "noRecommendations": {
+        "title": "No recommendations yet",
+        "titleFiltered": "No recommendations with status \"{{status}}\"",
+        "description": "Generate a new recommendation based on your impulses and stakeholder data."
+    },
+    "filter": {
+        "all": "All",
+        "pending_approval": "Pending",
+        "approved": "Approved",
+        "started": "Started",
+        "completed": "Completed",
+        "rejected": "Rejected"
+    },
+    "sections": {
+        "pending_approval": "Pending",
+        "approved": "Approved",
+        "started": "Started",
+        "completed": "Completed",
+        "rejected": "Rejected"
+    },
     "actions": {
         "approve": "Approve",
         "reject": "Reject",
@@ -17,5 +39,50 @@
         "started": "Started:",
         "completed": "Completed:",
         "reason": "Reason:"
+    },
+    "rejectModal": {
+        "title": "Reject recommendation",
+        "recommendation": "Recommendation:",
+        "reasonLabel": "Reason for rejection:",
+        "reasonPlaceholder": "e.g. Budget not available, cannot implement in time...",
+        "reasonRequired": "Please enter a reason for rejection",
+        "rejecting": "Rejecting..."
+    },
+    "editModal": {
+        "title": "Edit recommendation",
+        "titleLabel": "Title:",
+        "descriptionLabel": "Description:",
+        "typeLabel": "Type:",
+        "priorityLabel": "Priority:",
+        "affectedGroupsLabel": "Affected groups:",
+        "stepsLabel": "Specific steps:",
+        "stepPlaceholder": "Describe step...",
+        "addStep": "Add step",
+        "titleRequired": "Please enter a title"
+    },
+    "generatorModal": {
+        "title": "Generate new recommendation",
+        "titleRegenerate": "Generate alternative recommendation",
+        "contextTitle": "Context for AI:",
+        "projectGoal": "Project goal:",
+        "projectGoalNotDefined": "Not defined",
+        "stakeholderGroups": "Stakeholder groups:",
+        "rejectionReason": "Rejection reason:",
+        "focusLabel": "Focus (optional)",
+        "focusPlaceholder": "e.g. 'Improve communication' or leave empty",
+        "generateButton": "Generate recommendation",
+        "generating": "Generating recommendation...",
+        "generationError": "Error generating recommendation",
+        "generatedTitle": "Generated recommendation (editable):",
+        "titleLabel": "Title:",
+        "descriptionLabel": "Description:",
+        "typeLabel": "Type:",
+        "priorityLabel": "Priority:",
+        "affectedGroupsLabel": "Affected groups:",
+        "stepsLabel": "Specific steps:",
+        "stepPlaceholder": "Describe step...",
+        "addStep": "Add step",
+        "regenerate": "Regenerate",
+        "titleRequired": "Please enter a title"
     }
 }

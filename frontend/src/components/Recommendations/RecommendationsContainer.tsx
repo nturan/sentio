@@ -1,4 +1,5 @@
 import { useEffect, useState, Fragment, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Lightbulb, Plus, RefreshCw, Filter } from 'lucide-react';
 import { useStakeholder } from '../../context/StakeholderContext';
 import { useProjects } from '../../context/ProjectContext';
@@ -8,7 +9,6 @@ import { GeneratorModal } from './GeneratorModal';
 import { RejectModal } from './RejectModal';
 import { EditModal } from './EditModal';
 import type { Recommendation, RecommendationStatus } from '../../types/recommendation';
-import { RECOMMENDATION_STATUS_INFO } from '../../types/recommendation';
 import { listRecommendations, updateRecommendation } from '../../services/api';
 
 interface RecommendationsContainerProps {
@@ -19,6 +19,8 @@ interface RecommendationsContainerProps {
 type FilterStatus = 'all' | RecommendationStatus;
 
 export function RecommendationsContainer({ projectId, onNavigateToImpulse }: RecommendationsContainerProps) {
+    const { t } = useTranslation('recommendations');
+    const { t: tCommon } = useTranslation('common');
     const { groups, loadGroups } = useStakeholder();
     const { selectedProject } = useProjects();
     const { triggerRefresh } = useRefresh();
@@ -42,11 +44,11 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
             setRecommendations(data);
         } catch (err) {
             console.error('Failed to fetch recommendations:', err);
-            setError(err instanceof Error ? err.message : 'Fehler beim Laden');
+            setError(err instanceof Error ? err.message : tCommon('errors.loadFailed'));
         } finally {
             setIsLoading(false);
         }
-    }, [projectId]);
+    }, [projectId, tCommon]);
 
     useEffect(() => {
         loadGroups(projectId);
@@ -128,12 +130,12 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
     };
 
     const filterButtons: { value: FilterStatus; label: string }[] = [
-        { value: 'all', label: 'Alle' },
-        { value: 'pending_approval', label: 'Ausstehend' },
-        { value: 'approved', label: 'Genehmigt' },
-        { value: 'started', label: 'Gestartet' },
-        { value: 'completed', label: 'Abgeschlossen' },
-        { value: 'rejected', label: 'Abgelehnt' },
+        { value: 'all', label: t('filter.all') },
+        { value: 'pending_approval', label: t('filter.pending_approval') },
+        { value: 'approved', label: t('filter.approved') },
+        { value: 'started', label: t('filter.started') },
+        { value: 'completed', label: t('filter.completed') },
+        { value: 'rejected', label: t('filter.rejected') },
     ];
 
     return (
@@ -144,7 +146,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Lightbulb className="text-amber-500" size={24} />
-                            <h1 className="text-2xl font-bold text-gray-800">Handlungsempfehlungen</h1>
+                            <h1 className="text-2xl font-bold text-gray-800">{t('title')}</h1>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -159,7 +161,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                                 className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium"
                             >
                                 <Plus size={16} />
-                                Neue Empfehlung generieren
+                                {t('newRecommendation')}
                             </button>
                         </div>
                     </div>
@@ -204,19 +206,19 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                             <Lightbulb size={48} className="mx-auto text-gray-300 mb-4" />
                             <h2 className="text-lg font-medium text-gray-700 mb-2">
                                 {filterStatus === 'all'
-                                    ? 'Noch keine Handlungsempfehlungen'
-                                    : `Keine Empfehlungen mit Status "${RECOMMENDATION_STATUS_INFO[filterStatus as RecommendationStatus]?.label || filterStatus}"`
+                                    ? t('noRecommendations.title')
+                                    : t('noRecommendations.titleFiltered', { status: t(`filter.${filterStatus}`) })
                                 }
                             </h2>
                             <p className="text-sm text-gray-500 mb-4">
-                                Generieren Sie eine neue Empfehlung basierend auf Ihren Impulsen und Stakeholder-Daten.
+                                {t('noRecommendations.description')}
                             </p>
                             <button
                                 onClick={() => setShowGeneratorModal(true)}
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium"
                             >
                                 <Plus size={16} />
-                                Empfehlung generieren
+                                {t('generateRecommendation')}
                             </button>
                         </div>
                     ) : (
@@ -227,7 +229,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                                     {groupedRecommendations.pending_approval.length > 0 && (
                                         <div className="space-y-3">
                                             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                                                Ausstehend ({groupedRecommendations.pending_approval.length})
+                                                {t('sections.pending_approval')} ({groupedRecommendations.pending_approval.length})
                                             </h2>
                                             {groupedRecommendations.pending_approval.map(rec => (
                                                 <RecommendationCard
@@ -248,7 +250,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                                     {groupedRecommendations.approved.length > 0 && (
                                         <div className="space-y-3">
                                             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                                                Genehmigt ({groupedRecommendations.approved.length})
+                                                {t('sections.approved')} ({groupedRecommendations.approved.length})
                                             </h2>
                                             {groupedRecommendations.approved.map(rec => (
                                                 <RecommendationCard
@@ -269,7 +271,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                                     {groupedRecommendations.started.length > 0 && (
                                         <div className="space-y-3">
                                             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                                                Gestartet ({groupedRecommendations.started.length})
+                                                {t('sections.started')} ({groupedRecommendations.started.length})
                                             </h2>
                                             {groupedRecommendations.started.map(rec => (
                                                 <RecommendationCard
@@ -290,7 +292,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                                     {groupedRecommendations.completed.length > 0 && (
                                         <div className="space-y-3">
                                             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                                                Abgeschlossen ({groupedRecommendations.completed.length})
+                                                {t('sections.completed')} ({groupedRecommendations.completed.length})
                                             </h2>
                                             {groupedRecommendations.completed.map(rec => (
                                                 <RecommendationCard
@@ -311,7 +313,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
                                     {groupedRecommendations.rejected.length > 0 && (
                                         <div className="space-y-3">
                                             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                                                Abgelehnt ({groupedRecommendations.rejected.length})
+                                                {t('sections.rejected')} ({groupedRecommendations.rejected.length})
                                             </h2>
                                             {groupedRecommendations.rejected.map(rec => (
                                                 <RecommendationCard

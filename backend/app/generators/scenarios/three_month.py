@@ -6,6 +6,7 @@ import sqlite3
 from typing import Any, Dict
 
 from ..scenario_base import ScenarioGenerator
+from ...prompts import load_constants
 
 
 class ThreeMonthScenario(ScenarioGenerator):
@@ -23,7 +24,7 @@ class ThreeMonthScenario(ScenarioGenerator):
     """
 
     SCENARIO_NAME = "3month"
-    SCENARIO_DESCRIPTION = "3-Monats-Projekt mit ersten Impulsen und Handlungen"
+    SCENARIO_DESCRIPTION = "3-month project with initial impulses and actions"
     PROJECT_AGE_DAYS = 90
     NUM_IMPULSES = 6
     NUM_RECOMMENDATIONS = 5
@@ -32,6 +33,10 @@ class ThreeMonthScenario(ScenarioGenerator):
     @classmethod
     def generate(cls, conn: sqlite3.Connection) -> Dict[str, Any]:
         """Generate a 3-month project scenario."""
+        # Load localized scenario data
+        scenarios = load_constants("scenarios")
+        scenario_data = scenarios["3month"]
+
         result = {
             "scenario": cls.SCENARIO_NAME,
             "project": None,
@@ -41,11 +46,11 @@ class ThreeMonthScenario(ScenarioGenerator):
             "sessions": [],
         }
 
-        # Create the project
+        # Create the project with localized name and goal
         project = cls.create_project(
             conn,
-            name="Agile Transformation Vertrieb",
-            goal="Einführung agiler Arbeitsmethoden in allen Vertriebsteams bis Q4",
+            name=scenario_data["project_name"],
+            goal=scenario_data["project_goal"],
             days_ago=cls.PROJECT_AGE_DAYS,
         )
         result["project"] = project
