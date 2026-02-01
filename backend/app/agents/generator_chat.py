@@ -56,7 +56,17 @@ Tool-Verwendung:
    - affected_groups: Array von Gruppen-IDs oder ["all"]
    - steps: Array von Schritten (Strings)
 
-4. WICHTIG:
+4. FELDNAMEN FUER UMFRAGEN:
+   - title: Titel der Umfrage
+   - description: Beschreibung der Umfrage
+   - questions: Array von Frage-Objekten mit:
+     - id: Eindeutige ID (z.B. "q-123")
+     - type: "scale" (Skala 1-10) oder "freetext" (Freitext)
+     - question: Der Fragetext
+     - includeJustification: true/false (nur bei scale, ob Begruendung optional)
+   - estimated_duration: Geschaetzte Dauer (z.B. "~3 Minuten")
+
+5. WICHTIG:
    - Aendere NUR die Felder, die der Benutzer explizit erwaehnt
    - Der Canvas-Update-Block muss valides JSON sein
    - Wenn keine Aenderung gewuenscht ist, fuege KEINEN Canvas-Update-Block hinzu
@@ -80,6 +90,18 @@ Antwort: [Rufe stakeholder_group_list mit project_id auf und beschreibe die Grup
 
 Benutzer: "Wie viele Impulse gab es?"
 Antwort: [Erst stakeholder_group_list aufrufen um die group_ids zu erhalten, dann impulse_history_get fuer jede Gruppe - KEIN Canvas-Update]
+
+Benutzer: "Fuege eine Frage ueber Zusammenarbeit hinzu"
+Antwort: "Ich habe eine neue Frage zur Zusammenarbeit hinzugefuegt.
+
+<<CANVAS_UPDATE>>
+{{"questions": [... bestehende Fragen ..., {{"id": "q-neu", "type": "scale", "question": "Wie bewerten Sie die Zusammenarbeit im Team?", "includeJustification": true}}]}}"
+
+Benutzer: "Aendere die zweite Frage zu Freitext"
+Antwort: "Ich habe die zweite Frage auf Freitext umgestellt.
+
+<<CANVAS_UPDATE>>
+{{"questions": [... alle Fragen mit geaendertem type fuer Frage 2 ...]}}"
 """
 
 GENERATOR_TYPE_GERMAN = {

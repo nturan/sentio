@@ -12,8 +12,21 @@ export interface RecommendationCanvasData {
     steps: string[];
 }
 
+// Canvas data for survey generator
+export interface SurveyCanvasData {
+    title: string;
+    description: string;
+    questions: Array<{
+        id: string;
+        type: 'scale' | 'freetext';
+        question: string;
+        includeJustification?: boolean;
+    }>;
+    estimated_duration?: string;
+}
+
 // Generic canvas data type for reusability across generators
-export type CanvasData = RecommendationCanvasData | Record<string, unknown>;
+export type CanvasData = RecommendationCanvasData | SurveyCanvasData | Record<string, unknown>;
 
 // Chat message in generator context
 export interface GeneratorChatMessage {
