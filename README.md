@@ -1,73 +1,106 @@
-# React + TypeScript + Vite
+# Cursor 2-Day AI Hackathon — Sentio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Cursor 2-Day AI Hackathon](https://ai-beavers.com/_next/image?url=%2Fimages%2Fhackathon-hero-20012026.png&w=1920&q=75)
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# Sentio
 
-## React Compiler
+> AI-powered Change Management Assistant for tracking stakeholder sentiment and driving organizational transformation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Sentio helps change managers monitor stakeholder feedback, generate actionable recommendations, and gain insights throughout organizational change initiatives. The platform uses AI agents to analyze stakeholder sentiment, create targeted surveys, and provide data-driven guidance.
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React, TypeScript, Tailwind CSS, Vite
+- **Backend**: Python, FastAPI, LangGraph
+- **Database**: SQLite
+- **AI/ML**: OpenAI GPT-4o, Tavily (web search)
+- **Hosting**: Heroku (Docker)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## How to Run
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
+- Node.js 18+
+- Python 3.11+
+- OpenAI API key
+- Tavily API key (optional, for web search)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/your-team/sentio.git
+cd sentio
+
+# Set up environment variables
+cp .env.example .env
+# Add your API keys to .env:
+# OPENAI_API_KEY=sk-...
+# TAVILY_API_KEY=tvly-...
+# LOCALE=en
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Run Backend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -e .
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Seed with demo data (optional)
+python -m app.seed --scenario six_month
+
+# Start the server
+uvicorn app.main:app --reload
+```
+
+### Run Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`
+
+## Features
+
+- **Stakeholder Management**: Track stakeholder groups with Mendelow matrix positioning
+- **Impulse Tracking**: Record and visualize stakeholder sentiment over time
+- **AI Recommendations**: Generate actionable recommendations based on stakeholder feedback
+- **Survey Generation**: Create targeted surveys with AI-generated questions
+- **Insights Dashboard**: AI-powered insights and trend analysis
+- **Multi-language Support**: Full i18n support (English/German)
+
+## Details
+
+### Architecture
+
+The application uses a multi-agent architecture powered by LangGraph:
+
+- **Chat Agent**: General change management assistant
+- **Survey Agent**: Generates targeted stakeholder surveys
+- **Recommendations Agent**: Creates actionable recommendations
+- **Insights Agent**: Analyzes data patterns and generates insights
+- **Orchestrator**: Routes requests to appropriate agents
+
+### Demo Scenarios
+
+Seed the database with realistic demo data:
+
+```bash
+# Fresh project
+python -m app.seed --scenario new_project
+
+# 3 months of data
+python -m app.seed --scenario three_month
+
+# 6 months of data
+python -m app.seed --scenario six_month
+
+# 10 months of data
+python -m app.seed --scenario ten_month
 ```
