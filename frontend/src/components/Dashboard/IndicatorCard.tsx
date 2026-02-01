@@ -9,7 +9,7 @@ interface IndicatorCardProps {
     ratingCount: number;
 }
 
-export function IndicatorCard({ name, description, averageRating, latestRating, previousRating, ratingCount }: IndicatorCardProps) {
+export function IndicatorCard({ name, description, latestRating, previousRating, ratingCount }: IndicatorCardProps) {
     const hasData = ratingCount > 0 && latestRating !== null;
 
     // Convert latest rating (1-10) to percentage (10-100%)

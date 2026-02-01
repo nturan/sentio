@@ -15,7 +15,7 @@ import {
     generateInsight,
     dismissInsight,
 } from '../../services/api';
-import type { Insight, InsightType, InsightPriority } from '../../types/insight';
+import type { Insight, InsightType } from '../../types/insight';
 import { INSIGHT_TYPE_INFO, INSIGHT_PRIORITY_INFO, TRIGGER_TYPE_INFO } from '../../types/insight';
 import { useRefresh, useRefreshSignal } from '../../context/RefreshContext';
 

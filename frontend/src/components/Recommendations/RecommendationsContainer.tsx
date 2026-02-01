@@ -107,7 +107,7 @@ export function RecommendationsContainer({ projectId, onNavigateToImpulse }: Rec
         setRegeneratingFrom(recommendation);
     };
 
-    const handleMeasureImpact = (recommendation: Recommendation) => {
+    const handleMeasureImpact = (_recommendation: Recommendation) => {
         // Navigate to Impulse tab
         if (onNavigateToImpulse) {
             onNavigateToImpulse();

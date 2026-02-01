@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, KeyboardEvent } from 'react';
+import { useRef, useEffect, useState, type KeyboardEvent } from 'react';
 import { Send, Loader2, MessageSquare } from 'lucide-react';
 import type { GeneratorChatMessage } from '../../types/generatorChat';
 import { cn } from '../../utils/cn';

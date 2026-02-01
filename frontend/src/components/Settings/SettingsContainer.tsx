@@ -34,7 +34,7 @@ function formatDate(dateString: string): string {
     });
 }
 
-export function SettingsContainer({ projectId }: SettingsContainerProps) {
+export function SettingsContainer({ projectId: _projectId }: SettingsContainerProps) {
     const { selectedProject, refreshProjects } = useProjects();
     const { triggerRefresh } = useRefresh();
     const documentsRefreshSignal = useRefreshSignal('documents');

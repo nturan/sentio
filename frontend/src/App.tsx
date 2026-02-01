@@ -1,4 +1,4 @@
-import { useState, useEffect, Component, type ReactNode } from 'react';
+import { useState, Component, type ReactNode } from 'react';
 import { AppLayout } from './components/Layout/AppLayout';
 import { TabNavigation } from './components/Layout/TabNavigation';
 import { ChatContainer } from './components/Chat/ChatContainer';

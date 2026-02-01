@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { IndicatorCard } from './IndicatorCard';
 import { InsightsSection } from './InsightsSection';
-import { getDashboardData, type DashboardData, type DashboardIndicatorScore } from '../../services/api';
+import { getDashboardData, type DashboardData } from '../../services/api';
 import { useRefreshSignal } from '../../context/RefreshContext';
 
 interface DashboardContainerProps {
@@ -162,7 +162,7 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                                                     borderRadius: '8px',
                                                     fontSize: '12px'
                                                 }}
-                                                formatter={(value: number) => [`${value}%`, '']}
+                                                formatter={(value) => [`${value}%`, '']}
                                             />
                                             <Legend wrapperStyle={{ fontSize: '12px' }} />
                                             {dashboardData?.indicators.map((indicator) => (

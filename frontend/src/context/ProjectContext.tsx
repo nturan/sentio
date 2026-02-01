@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { listProjects, createProject as apiCreateProject, type ProjectData, type CreateProjectRequest } from '../services/api';
+import { listProjects, createProject as apiCreateProject, type CreateProjectRequest } from '../services/api';
 
 // Types
 export interface Project {
