@@ -193,35 +193,6 @@ export function DashboardContainer({ projectId }: DashboardContainerProps) {
                             )}
                         </div>
 
-                        {/* Quick Stats */}
-                        {hasAnyData && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                                    <div className="text-xs text-gray-500 uppercase mb-1">Durchschnitt</div>
-                                    <div className="text-2xl font-bold text-gray-900">
-                                        {Math.round(
-                                            (dashboardData?.indicators
-                                                .filter(i => i.average_rating !== null)
-                                                .reduce((sum, i) => sum + (i.average_rating || 0), 0) || 0) /
-                                            (dashboardData?.indicators.filter(i => i.average_rating !== null).length || 1) * 10
-                                        )}%
-                                    </div>
-                                </div>
-                                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                                    <div className="text-xs text-gray-500 uppercase mb-1">Bewertungen gesamt</div>
-                                    <div className="text-2xl font-bold text-gray-900">
-                                        {dashboardData?.indicators.reduce((sum, i) => sum + i.rating_count, 0) || 0}
-                                    </div>
-                                </div>
-                                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                                    <div className="text-xs text-gray-500 uppercase mb-1">Datenpunkte</div>
-                                    <div className="text-2xl font-bold text-gray-900">
-                                        {chartData.length}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Insights Section */}
                         <InsightsSection projectId={projectId} />
                     </>
